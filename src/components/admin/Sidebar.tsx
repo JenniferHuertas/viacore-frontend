@@ -51,6 +51,9 @@ export default function Sidebar() {
             <Link href="/admin/meetings" className={linkClass("/admin/meetings")}>
               Reuniones
             </Link>
+            <Link href="/admin/payments" className={linkClass("/admin/payments")}>
+              Pagos
+            </Link>
           </nav>
         </div>
       </div>
