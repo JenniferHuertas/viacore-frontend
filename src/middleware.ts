@@ -5,10 +5,6 @@ import { DecodedToken } from "./context/UserContext";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ============================
-  // 🚀 INICIO CAMBIO IMPORTANTE
-  // ============================
-  // Dejar pasar assets, API y archivos estáticos
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -24,7 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const protectedRoutes = [
+  const protectedRoutes: string[] = [
     "/completar-perfil",
     "/mis-solicitudes",
     "/admin",
@@ -32,11 +28,7 @@ export function middleware(request: NextRequest) {
     "/solicitudes"
   ];
 
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  const publicRoutes = [
+  const publicRoutes: string[] = [
     "/",
     "/autenticacion",
     "/contacto",
@@ -44,6 +36,10 @@ export function middleware(request: NextRequest) {
     "/capacitaciones",
     "/casos",
   ];
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
@@ -55,13 +51,11 @@ export function middleware(request: NextRequest) {
     if (isProtectedRoute) {
       return NextResponse.redirect(new URL("/autenticacion", request.url));
     }
-
     return NextResponse.next();
   }
 
   try {
     const user = jwtDecode<DecodedToken>(token);
-
     const isCompleteProfilePage = pathname === "/completar-perfil";
 
     if (!user.profileCompleted) {
@@ -74,7 +68,11 @@ export function middleware(request: NextRequest) {
     }
 
     if (pathname === "/autenticacion" || isCompleteProfilePage) {
-      return NextResponse.redirect(new URL("/", request.url));
+      if (user.role === "admin") {
+        return NextResponse.redirect(new URL("/admin/requests", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
 
     return NextResponse.next();
