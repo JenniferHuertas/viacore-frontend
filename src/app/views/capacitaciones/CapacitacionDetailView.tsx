@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getTrainingById } from "@/services/training.service";
 import SolicitarButton from "@/components/capacitaciones/SolicitarButton";
 

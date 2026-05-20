@@ -16,6 +16,7 @@ type DecodedToken = {
 
 export default function CompleteProfileForm() {
   const router = useRouter();
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -27,6 +28,17 @@ export default function CompleteProfileForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const handleBlur = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name } = e.target;
+
+  setTouched((prev) => ({
+    ...prev,
+    [name]: true,
+  }));
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -60,7 +72,7 @@ export default function CompleteProfileForm() {
         fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
-      toast.error("Revisá los campos");
+      toast.warning("Debes completar todos los campos");
       return;
     }
 
@@ -92,7 +104,8 @@ export default function CompleteProfileForm() {
             placeholder="Teléfono"
             value={formData.phone}
             onChange={handleChange}
-            error={errors.phone}
+            onBlur={handleBlur}
+            error={touched.phone ? errors.phone : ""}
           />
           <p className="mt-2 text-xs text-gray-500">Número de contacto de la empresa</p>
         </div>
@@ -102,6 +115,7 @@ export default function CompleteProfileForm() {
             name="country"
             value={formData.country}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={`w-full rounded-xl border bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition ${
               errors.country ? "border-red-500" : "border-white/10 focus:border-[#C7962D]"
             }`}
@@ -117,7 +131,11 @@ export default function CompleteProfileForm() {
             <option value="España">🇪🇸 España</option>
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>
-          {errors.country && <p className="text-sm text-red-400">{errors.country}</p>}
+          {touched.country && errors.country && (
+  <p className="text-sm text-red-400">
+    {errors.country}
+  </p>
+)}
           <p className="text-xs text-gray-500">País donde opera la empresa</p>
         </div>
 
@@ -128,7 +146,8 @@ export default function CompleteProfileForm() {
             placeholder="Ciudad"
             value={formData.city}
             onChange={handleChange}
-            error={errors.city}
+            onBlur={handleBlur}
+            error={touched.city ? errors.city : ""}
           />
           <p className="mt-2 text-xs text-gray-500">Ciudad principal</p>
         </div>
@@ -140,7 +159,8 @@ export default function CompleteProfileForm() {
             placeholder="Dirección"
             value={formData.address}
             onChange={handleChange}
-            error={errors.address}
+            onBlur={handleBlur}
+            error={touched.address ? errors.address : ""}
           />
           <p className="mt-2 text-xs text-gray-500">Dirección empresarial</p>
         </div>
@@ -152,7 +172,8 @@ export default function CompleteProfileForm() {
             placeholder="Empresa"
             value={formData.companyName}
             onChange={handleChange}
-            error={errors.companyName}
+            onBlur={handleBlur}
+            error={touched.comnpanyName ? errors.companyName : ""}
           />
           <p className="mt-2 text-xs text-gray-500">Nombre de la empresa o institución</p>
         </div>
