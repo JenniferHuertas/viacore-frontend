@@ -35,6 +35,7 @@ export function middleware(request: NextRequest) {
     "/plataforma",
     "/capacitaciones",
     "/casos",
+    "/pago", 
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>

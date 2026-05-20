@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import { jwtDecode } from "jwt-decode";
 import type { ZodIssue } from "zod";
+
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+
 import { completeProfile } from "@/services/auth.service";
 import { toast } from "sonner";
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
+import { useUserContext } from "@/context/UserContext";
 
 type DecodedToken = {
   id: string;
@@ -16,7 +19,7 @@ type DecodedToken = {
 
 export default function CompleteProfileForm() {
   const router = useRouter();
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const { login } = useUserContext();
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -27,25 +30,28 @@ export default function CompleteProfileForm() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
   const handleBlur = (
-  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const { name } = e.target;
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name } = e.target;
+    setTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+  };
 
-  setTouched((prev) => ({
-    ...prev,
-    [name]: true,
-  }));
-};
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     const updatedValues = { ...formData, [name]: value };
     setFormData(updatedValues);
 
     const result = completeProfileSchema.safeParse(updatedValues);
+
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach((issue: ZodIssue) => {
@@ -64,7 +70,14 @@ export default function CompleteProfileForm() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    const allTouched = Object.keys(formData).reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setTouched(allTouched);
+
     const validation = completeProfileSchema.safeParse(formData);
+
     if (!validation.success) {
       const fieldErrors: Record<string, string> = {};
       validation.error.issues.forEach((issue: ZodIssue) => {
@@ -72,7 +85,7 @@ export default function CompleteProfileForm() {
         fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
-      toast.warning("Debes completar todos los campos");
+      toast.warning("Por favor, revisa los campos marcados en rojo.");
       return;
     }
 
@@ -80,15 +93,30 @@ export default function CompleteProfileForm() {
 
     try {
       setLoading(true);
-      const res = await completeProfile(decoded.id, formData);
+
+      const res = await completeProfile(decoded.id, token, formData);
+
       localStorage.setItem("token", res.access_token);
       document.cookie = `userSession=${res.access_token}; path=/; max-age=604800; SameSite=Lax`;
-      setFormData({ phone: "", country: "", companyName: "", city: "", address: "" });
+
+      login(res.access_token);
+
+      setFormData({
+        phone: "",
+        country: "",
+        companyName: "",
+        city: "",
+        address: "",
+      });
       setErrors({});
+      setTouched({});
+
+      toast.success("Perfil completado correctamente");
+
       router.push("/");
     } catch (err) {
       console.error(err);
-      toast.error("Error al completar perfil");
+      toast.error("Error al completar el perfil. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -107,7 +135,9 @@ export default function CompleteProfileForm() {
             onBlur={handleBlur}
             error={touched.phone ? errors.phone : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">Número de contacto de la empresa</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Número de contacto de la empresa
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -117,7 +147,9 @@ export default function CompleteProfileForm() {
             onChange={handleChange}
             onBlur={handleBlur}
             className={`w-full rounded-xl border bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition ${
-              errors.country ? "border-red-500" : "border-white/10 focus:border-[#C7962D]"
+              touched.country && errors.country
+                ? "border-red-500"
+                : "border-white/10 focus:border-[#C7962D]"
             }`}
           >
             <option value="">🌍 Seleccionar país</option>
@@ -132,10 +164,8 @@ export default function CompleteProfileForm() {
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>
           {touched.country && errors.country && (
-  <p className="text-sm text-red-400">
-    {errors.country}
-  </p>
-)}
+            <p className="text-sm text-red-400">{errors.country}</p>
+          )}
           <p className="text-xs text-gray-500">País donde opera la empresa</p>
         </div>
 
@@ -173,9 +203,11 @@ export default function CompleteProfileForm() {
             value={formData.companyName}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.comnpanyName ? errors.companyName : ""}
+            error={touched.companyName ? errors.companyName : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">Nombre de la empresa o institución</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Nombre de la empresa o institución
+          </p>
         </div>
       </div>
 
