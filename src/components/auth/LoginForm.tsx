@@ -28,16 +28,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors, isValid },
+    formState: { errors, touchedFields },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    mode: "onChange",
+    mode: "onTouched",
   });
-
-  const email = watch("email");
-  const password = watch("password");
-  const isDisabled = !email || !password || !isValid;
 
   const onSubmit = async (data: any) => {
     try {
@@ -66,7 +61,24 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+   <form
+  onSubmit={handleSubmit(
+    onSubmit,
+    (errors) => {
+      const hasEmptyFields = Object.values(errors).some(
+        (error) =>
+          error?.message === "El email es obligatorio" ||
+          error?.message === "La contraseña es obligatoria"
+      );
+
+      if (hasEmptyFields) {
+        toast.warning("Debes completar todos los campos");
+      }
+    }
+  )}
+  noValidate
+  className="space-y-5"
+>
       <GoogleButton />
 
       <div className="text-center text-gray-500">o</div>
@@ -77,11 +89,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           placeholder="Correo electrónico"
           {...register("email")}
         />
-        {errors.email?.message && (
-          <p className="text-red-500 text-xs mt-1">
-            {String(errors.email.message)}
-          </p>
-        )}
+     {touchedFields.email && errors.email?.message && (
+  <p className="text-red-500 text-xs mt-1">
+    {String(errors.email.message)}
+  </p>
+)}
       </div>
 
       <div className="relative">
@@ -97,11 +109,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
-        {errors.password?.message && (
-          <p className="text-red-500 text-xs mt-1">
-            {String(errors.password.message)}
-          </p>
-        )}
+       {touchedFields.password && errors.password?.message && (
+  <p className="text-red-500 text-xs mt-1">
+    {String(errors.password.message)}
+  </p>
+)}
       </div>
 
       <div className="flex items-center justify-between text-sm">
@@ -116,8 +128,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       <Button
         type="submit"
-        className={`w-full transition ${isDisabled && "opacity-20 cursor-not-allowed"}`}
-        disabled={isDisabled}
+        className="w-full"
       >
         Acceder
       </Button>
