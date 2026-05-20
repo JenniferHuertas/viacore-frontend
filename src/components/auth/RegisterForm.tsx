@@ -23,9 +23,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const { login } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -36,7 +36,19 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     phone: "",
     country: "",
     companyName: "",
+    acceptedTerms: false
   });
+
+  const handleBlur = (
+  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name } = e.target;
+
+  setTouched((prev) => ({
+    ...prev,
+    [name]: true,
+  }));
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -59,11 +71,6 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!acceptedTerms) {
-      toast.warning("Debes aceptar los términos y condiciones");
-      return;
-    }
-
     const result = registerSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -72,12 +79,13 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         if (!fieldErrors[field]) fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
-      toast.warning("Revisá los campos del formulario");
+      toast.warning("Debes completar todos los campos y aceptar los términos y condiciones");
       return;
     }
 
     try {
-      await registerUser(result.data);
+      const { acceptedTerms, ...userData } = result.data;
+      await registerUser(userData);
       toast.success("Cuenta creada. Iniciando sesión automáticamente...");
       const loginData = await loginUser({
         email: result.data.email,
@@ -114,13 +122,13 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <Input name="name" type="text" placeholder="Nombre completo" value={formData.name} onChange={handleChange} />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+            <Input name="name" type="text" placeholder="Nombre completo" value={formData.name} onChange={handleChange} onBlur={handleBlur}/>
+            {touched.name && errors.name && (<p className="text-red-500 text-xs mt-1">{errors.name}</p>)}
           </div>
 
           <div className="col-span-2">
-            <Input name="email" type="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            <Input name="email" type="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} onBlur={handleBlur} />
+            {touched.email && errors.email && (<p className="text-red-500 text-xs mt-1">{errors.email}</p>)}
           </div>
 
           <div className="col-span-2">
@@ -131,6 +139,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                 placeholder="Contraseña"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
               <button
                 type="button"
@@ -143,7 +152,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             <p className="mt-2 text-xs text-gray-500 leading-relaxed">
               Mínimo 8 caracteres, incluyendo mayúscula, minúscula, número y carácter especial.
             </p>
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            {touched.password && errors.password && (<p className="text-red-500 text-xs mt-1">{errors.password}</p>)}
           </div>
 
           <div className="col-span-2">
@@ -154,6 +163,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                 placeholder="Confirmar contraseña"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
               <button
                 type="button"
@@ -164,19 +174,19 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               </button>
             </div>
             <p className="mt-2 text-xs text-gray-500">Repetí la contraseña</p>
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+            {touched.confirmPassword && errors.confirmPassword && (<p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>)}
           </div>
 
           <div>
-            <Input name="address" type="text" placeholder="Dirección" value={formData.address} onChange={handleChange} />
+            <Input name="address" type="text" placeholder="Dirección" value={formData.address} onChange={handleChange} onBlur={handleBlur} />
             <p className="mt-2 text-xs text-gray-500">Dirección de la empresa</p>
-            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+            {touched.address && errors.address && (<p className="text-red-500 text-xs mt-1">{errors.address}</p>)}
           </div>
 
           <div>
-            <Input name="phone" type="tel" placeholder="Teléfono" value={formData.phone} onChange={handleChange} />
+            <Input name="phone" type="tel" placeholder="Teléfono" value={formData.phone} onChange={handleChange} onBlur={handleBlur} />
             <p className="mt-2 text-xs text-gray-500">Número de contacto</p>
-            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+            {touched.phone && errors.phone && (<p className="text-red-500 text-xs mt-1">{errors.phone}</p>)}
           </div>
 
           <div>
@@ -184,6 +194,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               name="country"
               value={formData.country}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="w-full rounded-xl border border-white/10 bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition focus:border-[#C7962D]"
             >
               <option value="" disabled>🌍 Seleccionar país</option>
@@ -198,43 +209,64 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               <option value="Uruguay">🇺🇾 Uruguay</option>
             </select>
             <p className="mt-2 text-xs text-gray-500">País donde opera la empresa</p>
-            {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
+            {touched.country && errors.country && (<p className="text-red-500 text-xs mt-1">{errors.country}</p>)}
           </div>
 
           <div>
-            <Input name="city" type="text" placeholder="Ciudad" value={formData.city} onChange={handleChange} />
+            <Input name="city" type="text" placeholder="Ciudad" value={formData.city} onChange={handleChange} onBlur={handleBlur} />
             <p className="mt-2 text-xs text-gray-500">Ciudad principal</p>
-            {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+            {touched.city && errors.city && (<p className="text-red-500 text-xs mt-1">{errors.city}</p>)}
           </div>
 
           <div className="col-span-2">
-            <Input name="companyName" type="text" placeholder="Empresa" value={formData.companyName} onChange={handleChange} />
+            <Input name="companyName" type="text" placeholder="Empresa" value={formData.companyName} onChange={handleChange} onBlur={handleBlur} />
             <p className="mt-2 text-xs text-gray-500">Nombre de la empresa o institución</p>
-            {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName}</p>}
+            {touched.comnpanyName && errors.companyName && (<p className="text-red-500 text-xs mt-1">{errors.companyName}</p>)}
           </div>
         </div>
 
         <div className="flex items-start gap-3 text-sm text-gray-400">
           <button
-            type="button"
-            onClick={() => setShowTermsModal(true)}
-            className="mt-1 h-4 w-4 rounded border border-white/20 flex items-center justify-center bg-[#0D0D0D] transition hover:border-[#C7962D]"
-          >
-            {acceptedTerms && (
-              <div className="h-2 w-2 rounded-sm bg-[#C7962D]" />
-            )}
-          </button>
+    type="button"
+    onClick={() => {
+      setTouched((prev) => ({
+        ...prev,
+        acceptedTerms: true,
+      }));
+
+      setShowTermsModal(true);
+    }}
+    className="mt-1 h-4 w-4 rounded border border-white/20 flex items-center justify-center bg-[#0D0D0D] transition hover:border-[#C7962D] cursor-pointer"
+  >
+    {formData.acceptedTerms && (
+      <div className="h-2 w-2 rounded-sm bg-[#C7962D]" />
+    )}
+  </button>
           <span className="leading-relaxed">
-            Acepto los{" "}
-            <button
-              type="button"
-              onClick={() => setShowTermsModal(true)}
-              className="text-[#C7962D] hover:underline"
-            >
-              Términos y Condiciones
-            </button>
-          </span>
+    Acepto los{" "}
+
+    <button
+      type="button"
+      onClick={() => {
+        setTouched((prev) => ({
+          ...prev,
+          acceptedTerms: true,
+        }));
+
+        setShowTermsModal(true);
+      }}
+      className="text-[#C7962D] hover:underline cursor-pointer"
+    >
+      Términos y Condiciones
+    </button>
+  </span>
         </div>
+
+        {touched.acceptedTerms && errors.acceptedTerms && (
+  <p className="text-red-500 text-xs mt-1">
+    {errors.acceptedTerms}
+  </p>
+)}
 
         <Button type="submit" className="w-full">
           Crear cuenta
@@ -251,15 +283,33 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           </button>
         </p>
       </form>
-      {showTermsModal && (
-        <TermsModal
-          onAccept={() => {
-            setAcceptedTerms(true);
-            setShowTermsModal(false);
-          }}
-          onClose={() => setShowTermsModal(false)}
-        />
-      )}
+  {showTermsModal && (
+  <TermsModal
+  onAccept={() => {
+  setFormData((prev) => ({
+    ...prev,
+    acceptedTerms: true,
+  }));
+
+  setErrors((prev) => ({
+    ...prev,
+    acceptedTerms: "",
+  }));
+
+  setShowTermsModal(false);
+}}
+
+      onClose={() => {
+    setFormData((prev) => ({
+      ...prev,
+      acceptedTerms: false,
+    }));
+
+    setShowTermsModal(false);
+  }}
+  />
+)}
     </>
   );
 }
+
