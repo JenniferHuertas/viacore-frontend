@@ -349,20 +349,6 @@ export default function EditServiceView({
 
       setSaving(true);
 
-      const token =
-        localStorage.getItem(
-          "token",
-        );
-
-      if (!token) {
-
-        toast.warning(
-          "Debes iniciar sesión",
-        );
-
-        return;
-      }
-
       const formData =
         new FormData();
 
@@ -413,7 +399,6 @@ export default function EditServiceView({
       await updateTraining(
         id,
         formData,
-        token,
       );
 
       toast.success(
@@ -750,7 +735,7 @@ export default function EditServiceView({
                           index,
                         )
                       }
-                      className="text-red-400 cursor-pointer" 
+                      className="text-red-400 cursor-pointer"
                     >
                       ×
                     </button>

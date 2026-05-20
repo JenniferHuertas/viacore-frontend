@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import {
+  useEffect,
+} from "react";
+
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
+
 import { useUser } from "@/hooks/useUser";
 
 export default function ProtectedRoute({
@@ -9,24 +16,57 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const { isHydrated, user } = useUser();
+  const router =
+    useRouter();
 
-  const isAdminRoute = pathname.startsWith("/admin");
+  const pathname =
+    usePathname();
+
+  const {
+    isHydrated,
+    user,
+  } = useUser();
+
+  const isAdminRoute =
+    pathname.startsWith(
+      "/admin",
+    );
+
+  const isAdmin =
+    user?.role
+      ?.toLowerCase() ===
+    "admin";
 
   useEffect(() => {
+
     if (!isHydrated) return;
 
-    if (isAdminRoute && user?.role !== "admin") {
+    if (
+      isAdminRoute &&
+      !isAdmin
+    ) {
+
       router.replace("/");
     }
-  }, [isHydrated, isAdminRoute, user, router]);
 
-  if (!isHydrated) return null;
+  }, [
+    isHydrated,
+    isAdminRoute,
+    isAdmin,
+    router,
+  ]);
 
-  if (isAdminRoute && user?.role !== "admin") return null;
+  if (!isHydrated) {
+    return null;
+  }
+
+  if (
+    isAdminRoute &&
+    !isAdmin
+  ) {
+    return null;
+  }
 
   return <>{children}</>;
 }

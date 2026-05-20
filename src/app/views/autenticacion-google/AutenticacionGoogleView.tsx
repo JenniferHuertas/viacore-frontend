@@ -2,118 +2,41 @@
 
 import {
   useEffect,
-  useRef,
-  useState,
 } from "react";
 
 import {
   useRouter,
-  useSearchParams,
 } from "next/navigation";
-
-import { useUser } from "@/hooks/useUser";
-
-import { jwtDecode } from "jwt-decode";
 
 import { toast } from "sonner";
 
-type DecodedToken = {
-  id: string;
-
-  email: string;
-
-  role: string;
-
-  profileCompleted: boolean;
-};
+import { useUserContext } from "@/context/UserContext";
 
 export default function AutenticacionGoogleView() {
+
   const router = useRouter();
 
-  const searchParams =
-    useSearchParams();
-
-  const { login } = useUser();
-
-  const hasLogged =
-    useRef(false);
-
-  const [mounted, setMounted] =
-    useState(false);
+  const {
+    refreshUser,
+  } = useUserContext();
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
+    const init =
+      async () => {
 
-    if (hasLogged.current) return;
+        await refreshUser();
 
-    try {
-      const token =
-        searchParams.get("token");
-
-      const isLogin =
-        searchParams.get("login");
-
-      if (!token) {
-        toast.error(
-          "Error al autenticar con Google",
-        );
-
-        router.push(
-          "/autenticacion",
-        );
-
-        return;
-      }
-
-      hasLogged.current = true;
-
-      const decoded =
-        jwtDecode<DecodedToken>(token);
-
-      login(token);
-
-      if (isLogin === "true") {
         toast.success(
-          "Sesión iniciada con Google",
-        );
-      } else {
-        toast.success(
-          "Cuenta creada con Google",
-        );
-      }
-
-      if (
-        !decoded.profileCompleted
-      ) {
-        router.push(
-          "/completar-perfil",
+          "Autenticación con Google exitosa",
         );
 
-        return;
-      }
+        router.push("/");
+      };
 
-      router.push("/");
-    } catch {
-      toast.error(
-        "Error al autenticar con Google",
-      );
+    init();
 
-      router.push(
-        "/autenticacion",
-      );
-    }
-  }, [
-    mounted,
-    searchParams,
-    login,
-    router,
-  ]);
-
-  if (!mounted) return null;
+  }, [router, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white">
