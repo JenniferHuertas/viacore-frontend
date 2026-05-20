@@ -5,6 +5,10 @@ import { DecodedToken } from "./context/UserContext";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ============================
+  // 🚀 INICIO CAMBIO IMPORTANTE
+  // ============================
+  // Dejar pasar assets, API y archivos estáticos
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -20,30 +24,51 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isPublicRoute =
-    pathname === "/" ||
-    pathname === "/autenticacion" ||
-    pathname === "/contacto" ||
-    pathname.startsWith("/plataforma") ||
-    pathname.startsWith("/capacitaciones") ||
-    pathname.startsWith("/casos");
+  const protectedRoutes = [
+    "/completar-perfil",
+    "/mis-solicitudes",
+    "/admin",
+    "/perfil",
+    "/solicitudes"
+  ];
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  const publicRoutes = [
+    "/",
+    "/autenticacion",
+    "/contacto",
+    "/plataforma",
+    "/capacitaciones",
+    "/casos",
+  ];
+
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   const token = request.cookies.get("userSession")?.value;
 
   if (!token) {
-    if (isPublicRoute) {
-      return NextResponse.next();
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL("/autenticacion", request.url));
     }
-    return NextResponse.redirect(new URL("/autenticacion", request.url));
+
+    return NextResponse.next();
   }
 
   try {
     const user = jwtDecode<DecodedToken>(token);
+
     const isCompleteProfilePage = pathname === "/completar-perfil";
 
     if (!user.profileCompleted) {
       if (!isCompleteProfilePage) {
-        return NextResponse.redirect(new URL("/completar-perfil", request.url));
+        return NextResponse.redirect(
+          new URL("/completar-perfil", request.url)
+        );
       }
       return NextResponse.next();
     }
