@@ -18,8 +18,6 @@ import { createTrainingRequest } from "@/services/trainingRequests.service";
 
 import { trainingRequestSchema } from "@/validations/trainingRequest.validations";  
 
-import {toast} from "sonner";
-
 export default function SolicitudesView() {
 
   const searchParams =
