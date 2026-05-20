@@ -17,8 +17,8 @@ export const editTrainingRequestSchema =
     objectives: z
       .string()
       .min(
-        10,
-        "Los objetivos deben tener al menos 10 caracteres",
+        20,
+        "Los objetivos deben tener al menos 20 caracteres",
       )
       .max(
         2000,
@@ -28,8 +28,8 @@ export const editTrainingRequestSchema =
     context: z
       .string()
       .min(
-        10,
-        "El contexto debe tener al menos 10 caracteres",
+        30,
+        "El contexto debe tener al menos 30 caracteres",
       )
       .max(
         3000,

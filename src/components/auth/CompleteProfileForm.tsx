@@ -157,7 +157,8 @@ export default function CompleteProfileForm() {
             placeholder="Teléfono"
             value={formData.phone}
             onChange={handleChange}
-            error={errors.phone}
+            onBlur={handleBlur}
+            error={touched.phone ? errors.phone : ""}
           />
 
           <p className="mt-2 text-xs text-gray-500">
@@ -170,6 +171,7 @@ export default function CompleteProfileForm() {
             name="country"
             value={formData.country}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={`w-full rounded-xl border bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition ${
               errors.country
                 ? "border-red-500"
@@ -235,7 +237,8 @@ export default function CompleteProfileForm() {
             placeholder="Ciudad"
             value={formData.city}
             onChange={handleChange}
-            error={errors.city}
+            onBlur={handleBlur}
+            error={touched.city ? errors.city : ""}
           />
 
           <p className="mt-2 text-xs text-gray-500">
@@ -250,7 +253,8 @@ export default function CompleteProfileForm() {
             placeholder="Dirección"
             value={formData.address}
             onChange={handleChange}
-            error={errors.address}
+            onBlur={handleBlur}
+            error={touched.address ? errors.address : ""}
           />
 
           <p className="mt-2 text-xs text-gray-500">
@@ -265,7 +269,8 @@ export default function CompleteProfileForm() {
             placeholder="Empresa"
             value={formData.companyName}
             onChange={handleChange}
-            error={errors.companyName}
+            onBlur={handleBlur}
+            error={touched.comnpanyName ? errors.companyName : ""}
           />
 
           <p className="mt-2 text-xs text-gray-500">

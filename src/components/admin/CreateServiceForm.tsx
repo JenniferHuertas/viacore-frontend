@@ -1,376 +1,158 @@
 "use client";
 
 import { useState } from "react";
-
 import { toast } from "sonner";
 
 import Input from "@/components/ui/Input";
-
 import Button from "@/components/ui/Button";
 
 import { createTraining } from "@/services/training.service";
-
 import { createServiceSchema } from "@/validations/createServiceValidator";
 
 type FormDataType = {
   title: string;
-
   shortDescription: string;
-
   description: string;
-
   tagline: string;
-
   category: string;
-
   includes: string[];
-
   file: File | null;
 };
 
-type Props = {
-  initialData?: FormDataType;
+export default function CreateServiceForm() {
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState<FormDataType>({
+    title: "",
+    shortDescription: "",
+    description: "",
+    tagline: "",
+    category: "",
+    includes: [""],
+    file: null,
+  });
+
+  const [touched, setTouched] = useState<Record<string, boolean>>({
+    title: false,
+    shortDescription: false,
+    description: false,
+    tagline: false,
+    category: false,
+    includes: false,
+    file: false,
+  });
+
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const getErrors = () => {
+  const result = createServiceSchema.safeParse(form);
+
+  if (result.success) return {};
+
+  const f = result.error.format();
+
+  return {
+    title: f.title?._errors?.[0],
+    shortDescription: f.shortDescription?._errors?.[0],
+    description: f.description?._errors?.[0],
+    tagline: f.tagline?._errors?.[0],
+    category: f.category?._errors?.[0],
+    includes: f.includes?._errors?.[0],
+    file: f.file?._errors?.[0],
+  };
 };
 
-export default function CreateServiceForm({
-  initialData,
-}: Props) {
+const errors = getErrors();
 
-  const [loading, setLoading] =
-    useState(false);
+ const showError = (field: keyof FormDataType) => {
+  if (!submitAttempted && !touched[field]) return "";
+  return errors[field];
+};
 
-  const [errors, setErrors] =
-    useState<Record<string, string>>(
-      {
-        title: "",
-        shortDescription: "",
-        description: "",
-        tagline: "",
-        category: "",
-        includes: "",
-        file: "",
-      },
-    );
+  const inputClass = (field: keyof FormDataType) =>
+    showError(field)
+      ? "border-red-500"
+      : "border-white/10";
 
-  const [form, setForm] =
-    useState<FormDataType>(
-      initialData || {
-        title: "",
-
-        shortDescription: "",
-
-        description: "",
-
-        tagline: "",
-
-        category: "",
-
-        includes: [""],
-
-        file: null,
-      },
-    );
-
-  const getFieldErrors = (
-    values: FormDataType,
-  ): Record<string, string> => {
-
-    const result =
-      createServiceSchema.safeParse(
-        values,
-      );
-
-    if (result.success) {
-
-      return {
-        title: "",
-        shortDescription: "",
-        description: "",
-        tagline: "",
-        category: "",
-        includes: "",
-        file: "",
-      };
-    }
-
-    const formatted =
-      result.error.format();
-
-    return {
-      title:
-        formatted.title?._errors?.[0] ??
-        "",
-
-      shortDescription:
-        formatted
-          .shortDescription
-          ?._errors?.[0] ??
-        "",
-
-      description:
-        formatted
-          .description
-          ?._errors?.[0] ??
-        "",
-
-      tagline:
-        formatted
-          .tagline
-          ?._errors?.[0] ??
-        "",
-
-      category:
-        formatted
-          .category
-          ?._errors?.[0] ??
-        "",
-
-      includes:
-        formatted
-          .includes
-          ?._errors?.[0] ??
-        "",
-
-      file:
-        formatted.file
-          ?._errors?.[0] ??
-        "",
-    };
-  };
-
-  const validateField = (
-    field: keyof Record<
-      string,
-      string
-    >,
-    values: FormDataType,
-  ) => {
-
-    const fieldErrors =
-      getFieldErrors(values);
-
-    setErrors(fieldErrors);
-
-    const errorMessage =
-      fieldErrors[field];
-
-    if (!errorMessage) return;
-
-    switch (field) {
-
-      case "title":
-
-        toast.error(
-          `Título: ${errorMessage}`,
-          {
-            id: "title-error",
-          },
-        );
-
-        break;
-
-      case "shortDescription":
-
-        toast.error(
-          `Descripción corta: ${errorMessage}`,
-          {
-            id: "short-description-error",
-          },
-        );
-
-        break;
-
-      case "description":
-
-        toast.error(
-          `Descripción: ${errorMessage}`,
-          {
-            id: "description-error",
-          },
-        );
-
-        break;
-
-      case "tagline":
-
-        toast.error(
-          `Tagline: ${errorMessage}`,
-          {
-            id: "tagline-error",
-          },
-        );
-
-        break;
-
-      case "category":
-
-        toast.error(
-          `Categoría: ${errorMessage}`,
-          {
-            id: "category-error",
-          },
-        );
-
-        break;
-
-      case "includes":
-
-        toast.error(
-          `Includes: ${errorMessage}`,
-          {
-            id: "includes-error",
-          },
-        );
-
-        break;
-
-      case "file":
-
-        toast.error(
-          `Imagen: ${errorMessage}`,
-          {
-            id: "file-error",
-          },
-        );
-
-        break;
-    }
-  };
-
-  const handleChange = (
-    field: keyof FormDataType,
-    value: any,
-  ) => {
-
-    const updatedForm = {
-      ...form,
-
+  const handleChange = (field: keyof FormDataType, value: any) => {
+    setForm((prev) => ({
+      ...prev,
       [field]: value,
-    };
-
-    setForm(updatedForm);
-
-    validateField(
-      field,
-      updatedForm,
-    );
+    }));
   };
 
-  const handleIncludeChange = (
-    index: number,
-    value: string,
-  ) => {
+  const handleBlur = (field: keyof FormDataType) => {
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+  };
 
-    const updatedIncludes = [
-      ...form.includes,
-    ];
+  const handleIncludeChange = (index: number, value: string) => {
+    const updated = [...form.includes];
+    updated[index] = value;
 
-    updatedIncludes[index] = value;
-
-    const updatedForm = {
-      ...form,
-
-      includes: updatedIncludes,
-    };
-
-    setForm(updatedForm);
-
-    validateField(
-      "includes",
-      updatedForm,
-    );
+    setForm((prev) => ({
+      ...prev,
+      includes: updated,
+    }));
   };
 
   const addInclude = () => {
+    setForm((prev) => ({
+      ...prev,
+      includes: [...prev.includes, ""],
+    }));
+  };
 
-    setForm({
-      ...form,
+  const removeInclude = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      includes: prev.includes.filter((_, i) => i !== index),
+    }));
+  };
 
-      includes: [
-        ...form.includes,
-        "",
-      ],
+const handleSubmit = async () => {
+  setTouched({
+  title: true,
+  shortDescription: true,
+  description: true,
+  tagline: true,
+  category: true,
+  includes: true,
+  file: true,
+});
+
+setSubmitAttempted(true);
+
+  const result = createServiceSchema.safeParse(form);
+
+  if (!result.success) {
+    setTouched({
+      title: true,
+      shortDescription: true,
+      description: true,
+      tagline: true,
+      category: true,
+      includes: true,
+      file: true,
     });
-  };
 
-  const removeInclude = (
-    index: number,
-  ) => {
-
-    const updatedForm = {
-      ...form,
-
-      includes: form.includes.filter(
-        (_, i) => i !== index,
-      ),
-    };
-
-    setForm(updatedForm);
-
-    validateField(
-      "includes",
-      updatedForm,
-    );
-  };
-
-  const handleSubmit = async () => {
-
-    const validation =
-      createServiceSchema.safeParse(
-        form,
-      );
-
-    if (!validation.success) {
-
-      const fieldErrors =
-        getFieldErrors(form);
-
-      setErrors(fieldErrors);
-
-      const firstError =
-        Object.values(
-          fieldErrors,
-        ).find(Boolean);
-
-      toast.error(
-        firstError ||
-          "Revisá los campos del formulario",
-      );
-
-      return;
-    }
+    toast.warning("Debes completar todos los campos");
+    return;
+  }
 
     try {
 
       setLoading(true);
 
-      const formData =
-        new FormData();
+    const formData = new FormData();
 
-      formData.append(
-        "title",
-        form.title,
-      );
-
-      formData.append(
-        "shortDescription",
-        form.shortDescription,
-      );
-
-      formData.append(
-        "description",
-        form.description,
-      );
-
-      formData.append(
-        "tagline",
-        form.tagline,
-      );
-
-      formData.append(
-        "category",
-        form.category,
-      );
+    formData.append("title", form.title);
+    formData.append("shortDescription", form.shortDescription);
+    formData.append("description", form.description);
+    formData.append("tagline", form.tagline);
+    formData.append("category", form.category);
 
       form.includes.forEach(
         (item) => {
@@ -391,247 +173,131 @@ export default function CreateServiceForm({
         formData,
       );
 
-      toast.success(
-        "Servicio creado correctamente",
-      );
+    toast.success("Servicio creado correctamente");
 
-      setForm({
-        title: "",
+    setForm({
+      title: "",
+      shortDescription: "",
+      description: "",
+      tagline: "",
+      category: "",
+      includes: [""],
+      file: null,
+    });
 
-        shortDescription: "",
+    setTouched({
+      title: false,
+      shortDescription: false,
+      description: false,
+      tagline: false,
+      category: false,
+      includes: false,
+      file: false,
+    });
 
-        description: "",
+    setSubmitAttempted(false);
 
-        tagline: "",
-
-        category: "",
-
-        includes: [""],
-
-        file: null,
-      });
-
-      setErrors({
-        title: "",
-        shortDescription: "",
-        description: "",
-        tagline: "",
-        category: "",
-        includes: "",
-        file: "",
-      });
-
-    } catch (error) {
-
-      console.error(
-        "ERROR BACK:",
-        JSON.stringify(
-          error,
-          null,
-          2,
-        ),
-      );
-
-      toast.error(
-        "Error creando servicio",
-      );
-
-    } finally {
-
-      setLoading(false);
-    }
-  };
-
-  const inputClass = (
-    field: string,
-  ) =>
-    `${
-      errors[field]
-        ? "border-red-500"
-        : "border-white/10"
-    }`;
+  } catch (error) {
+    toast.error("Error al guardar el servicio");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="max-w-xl space-y-5">
 
       <div className="space-y-2">
-
         <Input
           placeholder="Título"
           value={form.title}
-          onChange={(e) =>
-            handleChange(
-              "title",
-              e.target.value,
-            )
-          }
-          className={inputClass(
-            "title",
-          )}
+          onChange={(e) => handleChange("title", e.target.value)}
+          onBlur={() => handleBlur("title")}
+          className={inputClass("title")}
         />
-
-        {errors.title && (
-          <p className="text-sm text-red-400">
-            {errors.title}
-          </p>
+        {showError("title") && (
+          <p className="text-sm text-red-400">{showError("title")}</p>
         )}
-
       </div>
 
       <div className="space-y-2">
-
         <Input
           placeholder="Descripción corta"
-          value={
-            form.shortDescription
-          }
-          onChange={(e) =>
-            handleChange(
-              "shortDescription",
-              e.target.value,
-            )
-          }
-          className={inputClass(
-            "shortDescription",
-          )}
+          value={form.shortDescription}
+          onChange={(e) => handleChange("shortDescription", e.target.value)}
+          onBlur={() => handleBlur("shortDescription")}
+          className={inputClass("shortDescription")}
         />
-
-        {errors.shortDescription && (
-          <p className="text-sm text-red-400">
-            {
-              errors.shortDescription
-            }
-          </p>
+        {showError("shortDescription") && (
+          <p className="text-sm text-red-400">{showError("shortDescription")}</p>
         )}
-
       </div>
 
       <div className="space-y-2">
-
         <Input
           placeholder="Tagline"
           value={form.tagline}
-          onChange={(e) =>
-            handleChange(
-              "tagline",
-              e.target.value,
-            )
-          }
-          className={inputClass(
-            "tagline",
-          )}
+          onChange={(e) => handleChange("tagline", e.target.value)}
+          onBlur={() => handleBlur("tagline")}
+          className={inputClass("tagline")}
         />
-
-        {errors.tagline && (
-          <p className="text-sm text-red-400">
-            {errors.tagline}
-          </p>
+        {showError("tagline") && (
+          <p className="text-sm text-red-400">{showError("tagline")}</p>
         )}
-
       </div>
 
       <div className="space-y-2">
-
         <Input
           placeholder="Categoría"
           value={form.category}
-          onChange={(e) =>
-            handleChange(
-              "category",
-              e.target.value,
-            )
-          }
-          className={inputClass(
-            "category",
-          )}
+          onChange={(e) => handleChange("category", e.target.value)}
+          onBlur={() => handleBlur("category")}
+          className={inputClass("category")}
         />
-
-        {errors.category && (
-          <p className="text-sm text-red-400">
-            {errors.category}
-          </p>
+        {showError("category") && (
+          <p className="text-sm text-red-400">{showError("category")}</p>
         )}
-
       </div>
 
       <div className="space-y-2">
-
         <textarea
           placeholder="Descripción completa"
           value={form.description}
-          onChange={(e) =>
-            handleChange(
-              "description",
-              e.target.value,
-            )
-          }
-          className={`
-            w-full min-h-35 rounded-xl border bg-white/5 px-4 py-3 text-white outline-none
-
-            ${
-              errors.description
-                ? "border-red-500"
-                : "border-white/10"
-            }
-          `}
+          onChange={(e) => handleChange("description", e.target.value)}
+          onBlur={() => handleBlur("description")}
+          className={`w-full min-h-35 rounded-xl border bg-white/5 px-4 py-3 text-white outline-none ${inputClass("description")}`}
         />
-
-        {errors.description && (
-          <p className="text-sm text-red-400">
-            {errors.description}
-          </p>
+        {showError("description") && (
+          <p className="text-sm text-red-400">{showError("description")}</p>
         )}
-
       </div>
 
       <div className="space-y-3">
+        <p className="text-sm text-gray-400">Incluye</p>
 
-        <p className="text-sm text-gray-400">
-          Incluye
-        </p>
+        {form.includes.map((item, index) => (
+          <div key={index} className="flex gap-2">
+            <Input
+              placeholder="Ej: Diagnóstico de equipo"
+              value={item}
+              onChange={(e) =>
+                handleIncludeChange(index, e.target.value)
+              }
+              className={inputClass("includes")}
+            />
 
-        {form.includes.map(
-          (item, index) => (
-
-            <div
-              key={index}
-              className="flex gap-2"
+            <button
+              type="button"
+              onClick={() => removeInclude(index)}
+              className="px-4 rounded-lg bg-red-500/20 text-red-400 cursor-pointer"
             >
+              -
+            </button>
+          </div>
+        ))}
 
-              <Input
-                placeholder="Ej: Diagnóstico de equipo"
-                value={item}
-                onChange={(e) =>
-                  handleIncludeChange(
-                    index,
-                    e.target.value,
-                  )
-                }
-                className={inputClass(
-                  "includes",
-                )}
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  removeInclude(
-                    index,
-                  )
-                }
-                className="px-4 rounded-lg bg-red-500/20 text-red-400 cursor-pointer"
-              >
-                -
-              </button>
-
-            </div>
-          ),
-        )}
-
-        {errors.includes && (
-          <p className="text-sm text-red-400">
-            {errors.includes}
-          </p>
+        {showError("includes") && (
+          <p className="text-sm text-red-400">{showError("includes")}</p>
         )}
 
         <button
@@ -641,38 +307,22 @@ export default function CreateServiceForm({
         >
           + Agregar item
         </button>
-
       </div>
 
       <div className="space-y-2">
-
         <input
           type="file"
           accept="image/*"
           onChange={(e) =>
-            handleChange(
-              "file",
-              e.target.files?.[0] ||
-                null,
-            )
+            handleChange("file", e.target.files?.[0] || null)
           }
-          className={`
-            block w-full text-sm text-gray-300 rounded-xl border p-3 bg-white/5
-
-            ${
-              errors.file
-                ? "border-red-500"
-                : "border-white/10"
-            }
-          `}
+          onBlur={() => handleBlur("file")}
+          className={`block w-full text-sm text-gray-300 rounded-xl border p-3 bg-white/5 ${inputClass("file")}`}
         />
 
-        {errors.file && (
-          <p className="text-sm text-red-400">
-            {errors.file}
-          </p>
+        {showError("file") && (
+          <p className="text-sm text-red-400">{showError("file")}</p>
         )}
-
       </div>
 
       <Button

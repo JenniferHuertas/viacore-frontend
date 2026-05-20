@@ -49,6 +49,12 @@ export default function EditarSolicitudView({
   id,
 }: Props) {
 
+ const [touched, setTouched] = useState({
+  participantsCount: false,
+  objectives: false,
+  context: false,
+});
+
   const router =
     useRouter();
 
@@ -133,64 +139,6 @@ export default function EditarSolicitudView({
     };
   };
 
-  const validateField = (
-    field: keyof FormErrors,
-    values: {
-      participantsCount: number;
-
-      objectives: string;
-
-      context: string;
-    },
-  ) => {
-
-    const fieldErrors =
-      getFieldErrors(values);
-
-    setErrors(fieldErrors);
-
-    const errorMessage =
-      fieldErrors[field];
-
-    if (!errorMessage) return;
-
-    switch (field) {
-
-      case "participantsCount":
-
-        toast.error(
-          `Participantes: ${errorMessage}`,
-          {
-            id: "participants-error",
-          },
-        );
-
-        break;
-
-      case "objectives":
-
-        toast.error(
-          `Objetivos: ${errorMessage}`,
-          {
-            id: "objectives-error",
-          },
-        );
-
-        break;
-
-      case "context":
-
-        toast.error(
-          `Contexto: ${errorMessage}`,
-          {
-            id: "context-error",
-          },
-        );
-
-        break;
-    }
-  };
-
   useEffect(() => {
 
     const fetchSolicitud =
@@ -238,6 +186,23 @@ export default function EditarSolicitudView({
 
   }, [id]);
 
+  const handleBlur = (
+  field: keyof FormErrors,
+) => {
+  setTouched((prev) => ({
+    ...prev,
+    [field]: true,
+  }));
+
+  const fieldErrors = getFieldErrors({
+    participantsCount,
+    objectives,
+    context,
+  });
+
+  setErrors(fieldErrors);
+};
+
   const handleSubmit = async (
     e: SubmitEvent<HTMLFormElement>,
   ) => {
@@ -246,11 +211,19 @@ export default function EditarSolicitudView({
 
     const values = {
       participantsCount,
-
       objectives,
-
       context,
     };
+
+    const hasEmptyFields =
+    participantsCount < 1 ||
+    !objectives.trim() ||
+    !context.trim();
+
+  if (hasEmptyFields) {
+    toast.warning("Debes completar todos los campos");
+    return;
+  }
 
     const validation =
       editTrainingRequestSchema.safeParse(
@@ -258,22 +231,9 @@ export default function EditarSolicitudView({
       );
 
     if (!validation.success) {
-
       const fieldErrors =
-        getFieldErrors(values);
-
-      setErrors(fieldErrors);
-
-      const firstError =
-        Object.values(
-          fieldErrors,
-        ).find(Boolean);
-
-      toast.error(
-        firstError ||
-          "Revisá los campos",
-      );
-
+        getFieldErrors(values);     
+       setErrors(fieldErrors);
       return;
     }
 
@@ -321,7 +281,7 @@ export default function EditarSolicitudView({
     field: keyof FormErrors,
   ) =>
     `w-full rounded-xl border bg-black p-3 text-white outline-none focus:border-[#C7962D] ${
-      errors[field]
+     touched[field] && errors[field]
         ? "border-red-500"
         : "border-white/10"
     }`;
@@ -372,6 +332,7 @@ export default function EditarSolicitudView({
         </div>
 
         <form
+        noValidate
           onSubmit={
             handleSubmit
           }
@@ -404,49 +365,26 @@ export default function EditarSolicitudView({
               Participantes
             </label>
 
-            <input
-              type="number"
-              min={1}
-              value={
-                participantsCount
-              }
-              onChange={(e) => {
+        <input
+  type="number"
+  value={participantsCount}
+  onChange={(e) =>
+    setParticipantsCount(Number(e.target.value))
+  }
+  onBlur={() =>
+    handleBlur("participantsCount")
+  }
+  className={inputClass(
+    "participantsCount",
+  )}
+/>
 
-                const value =
-                  Number(
-                    e.target.value,
-                  );
-
-                setParticipantsCount(
-                  value,
-                );
-
-                validateField(
-                  "participantsCount",
-                  {
-                    participantsCount:
-                      value,
-
-                    objectives,
-
-                    context,
-                  },
-                );
-              }}
-              className={inputClass(
-                "participantsCount",
-              )}
-            />
-
-            {errors.participantsCount && (
-
-              <p className="text-sm text-red-400">
-                {
-                  errors.participantsCount
-                }
-              </p>
-
-            )}
+         {touched.participantsCount &&
+  errors.participantsCount && (
+    <p className="text-sm text-red-400">
+      {errors.participantsCount}
+    </p>
+)}
 
           </div>
 
@@ -456,42 +394,25 @@ export default function EditarSolicitudView({
               Objetivos
             </label>
 
-            <textarea
-              value={objectives}
-              onChange={(e) => {
+          <textarea
+  value={objectives}
+  onChange={(e) =>
+    setObjectives(e.target.value)
+  }
+  onBlur={() =>
+    handleBlur("objectives")
+  }
+  className={`${inputClass(
+    "objectives",
+  )} min-h-35`}
+/>
 
-                const value =
-                  e.target.value;
-
-                setObjectives(
-                  value,
-                );
-
-                validateField(
-                  "objectives",
-                  {
-                    participantsCount,
-
-                    objectives:
-                      value,
-
-                    context,
-                  },
-                );
-              }}
-              className={`${inputClass(
-                "objectives",
-              )} min-h-35`}
-            />
-
-            {errors.objectives && (
-
-              <p className="text-sm text-red-400">
-                {errors.objectives}
-              </p>
-
-            )}
-
+           {touched.objectives &&
+  errors.objectives && (
+    <p className="text-sm text-red-400">
+      {errors.objectives}
+    </p>
+)}
           </div>
 
           <div className="space-y-2">
@@ -500,48 +421,32 @@ export default function EditarSolicitudView({
               Contexto organizacional
             </label>
 
-            <textarea
-              value={context}
-              onChange={(e) => {
+         <textarea
+  value={context}
+  onChange={(e) =>
+    setContext(e.target.value)
+  }
+  onBlur={() =>
+    handleBlur("context")
+  }
+  className={`${inputClass(
+    "context",
+  )} min-h-35`}
+/>
 
-                const value =
-                  e.target.value;
-
-                setContext(
-                  value,
-                );
-
-                validateField(
-                  "context",
-                  {
-                    participantsCount,
-
-                    objectives,
-
-                    context:
-                      value,
-                  },
-                );
-              }}
-              className={`${inputClass(
-                "context",
-              )} min-h-35`}
-            />
-
-            {errors.context && (
-
-              <p className="text-sm text-red-400">
-                {errors.context}
-              </p>
-
-            )}
+          {touched.context &&
+  errors.context && (
+    <p className="text-sm text-red-400">
+      {errors.context}
+    </p>
+)}
 
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+            className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
           >
             {saving
               ? "Guardando..."

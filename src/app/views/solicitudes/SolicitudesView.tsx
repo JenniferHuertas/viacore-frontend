@@ -16,7 +16,9 @@ import { api } from "@/services/api";
 
 import { createTrainingRequest } from "@/services/trainingRequests.service";
 
-import { trainingRequestSchema } from "@/validations/trainingRequest.validations";
+import { trainingRequestSchema } from "@/validations/trainingRequest.validations";  
+
+import {toast} from "sonner";
 
 export default function SolicitudesView() {
 
