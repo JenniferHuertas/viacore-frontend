@@ -6,16 +6,22 @@ import { useEffect, useState } from "react";
 
 import { createTrainingRequest } from "@/services/trainingRequests.service";
 
-import { trainingRequestSchema } from "@/validations/trainingRequest.validations";
+import { trainingRequestSchema } from "@/validations/trainingRequest.validations";  
+
+import {toast} from "sonner";
 
 export default function SolicitudesView() {
   const searchParams = useSearchParams();
+
+  const [touched, setTouched] = useState<
+  Record<string, boolean>
+>({});
 
   const router = useRouter();
 
   const [trainingId, setTrainingId] = useState("");
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, any>>({});
 
   const [form, setForm] = useState({
     categoria: "",
@@ -46,30 +52,82 @@ export default function SolicitudesView() {
     }
   }, [searchParams]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const updatedForm = {
-      ...form,
+const handleChange = (
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement
+  >,
+) => {
 
-      [e.target.name]: e.target.value,
-    };
+  setForm({
+    ...form,
 
-    setForm(updatedForm)
+    [e.target.name]: e.target.value,
+  });
+};
 
-    const resultado = trainingRequestSchema.safeParse(updatedForm)
+const handleBlur = (
+  e: React.FocusEvent<
+    HTMLInputElement | HTMLTextAreaElement
+  >,
+) => {
 
-    if (!resultado.success) {
-      setErrors(resultado.error.format());
-    } else {
-      setErrors({});
-    }
-  };
+  const field = e.target.name;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    setTouched((prev) => ({
+    ...prev,
 
-    try {
+    [field]: true,
+  }));
+
+  if (!form[field as keyof typeof form]) {
+    return;
+  }
+
+  const resultado =
+    trainingRequestSchema.safeParse(form);
+
+  if (!resultado.success) {
+
+    const formattedErrors =
+      resultado.error.format();
+
+    setErrors((prev) => ({
+      ...prev,
+
+      [field]:
+        formattedErrors[
+          field as keyof typeof formattedErrors
+        ],
+    }));
+
+  } else {
+
+    setErrors((prev) => ({
+      ...prev,
+
+      [field]: undefined,
+    }));
+  }
+};
+
+ const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>,
+) => {
+  e.preventDefault();
+
+  const resultado =
+  trainingRequestSchema.safeParse(form);
+
+if (!resultado.success) {
+
+  toast.warning(
+    "Debes completar todos los campos",
+  );
+
+  return;
+}
+
+  try {
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -101,6 +159,10 @@ export default function SolicitudesView() {
         token,
       );
 
+      toast.success(
+  "Solicitud enviada correctamente",
+);
+
       router.push("/mis-solicitudes");
     } catch (error) {
       console.error(error);
@@ -119,7 +181,7 @@ export default function SolicitudesView() {
           medida.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
             <label className="text-sm text-gray-300">
               Tipo de capacitación
@@ -143,12 +205,13 @@ export default function SolicitudesView() {
               type="number"
               min={1}
               onChange={handleChange}
+              onBlur={handleBlur}
               value={form.personas}
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
               required
             />
 
-            {errors.personas?._errors?.[0] && (
+            {touched.personas && errors.personas?._errors?.[0] && (
               <p className="text-red-400 text-sm mt-1">
                 {errors.personas._errors[0]}
               </p>
@@ -160,14 +223,14 @@ export default function SolicitudesView() {
 
             <input
               name="objetivo"
-              minLength={20}
               onChange={handleChange}
+              onBlur={handleBlur}
               value={form.objetivo}
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
               required
             />
 
-            {errors.objetivo?._errors?.[0] && (
+            {touched.objetivo && errors.objetivo?._errors?.[0] && (
               <p className="text-red-400 text-sm mt-1">
                 {errors.objetivo._errors[0]}
               </p>
@@ -179,14 +242,14 @@ export default function SolicitudesView() {
 
             <textarea
               name="contexto"
-              minLength={30}
               onChange={handleChange}
+              onBlur={handleBlur}
               value={form.contexto}
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
               required
             />
 
-            {errors.contexto?._errors?.[0] && (
+            {touched.contexto && errors.contexto?._errors?.[0] && (
               <p className="text-red-400 text-sm mt-1">
                 {errors.contexto._errors[0]}
               </p>

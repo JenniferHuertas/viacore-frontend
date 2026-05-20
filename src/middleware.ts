@@ -20,22 +20,39 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isPublicRoute =
-    pathname === "/" ||
-    pathname === "/autenticacion" ||
-    pathname === "/contacto" ||
-    pathname.startsWith("/plataforma") ||
-    pathname.startsWith("/capacitaciones") ||
-    pathname.startsWith("/casos") ||
-    pathname.startsWith("/pago");
+  const protectedRoutes: string[] = [
+    "/completar-perfil",
+    "/mis-solicitudes",
+    "/admin",
+    "/perfil",
+    "/solicitudes"
+  ];
+
+  const publicRoutes: string[] = [
+    "/",
+    "/autenticacion",
+    "/contacto",
+    "/plataforma",
+    "/capacitaciones",
+    "/casos",
+    "/pago", 
+  ];
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   const token = request.cookies.get("userSession")?.value;
 
   if (!token) {
-    if (isPublicRoute) {
-      return NextResponse.next();
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL("/autenticacion", request.url));
     }
-    return NextResponse.redirect(new URL("/autenticacion", request.url));
+    return NextResponse.next();
   }
 
   try {
@@ -44,13 +61,19 @@ export function middleware(request: NextRequest) {
 
     if (!user.profileCompleted) {
       if (!isCompleteProfilePage) {
-        return NextResponse.redirect(new URL("/completar-perfil", request.url));
+        return NextResponse.redirect(
+          new URL("/completar-perfil", request.url)
+        );
       }
       return NextResponse.next();
     }
 
     if (pathname === "/autenticacion" || isCompleteProfilePage) {
-      return NextResponse.redirect(new URL("/", request.url));
+      if (user.role === "admin") {
+        return NextResponse.redirect(new URL("/admin/requests", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
 
     return NextResponse.next();

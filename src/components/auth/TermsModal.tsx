@@ -32,7 +32,7 @@ export default function TermsModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-2xl text-gray-500 transition hover:text-white"
+            className="text-2xl text-gray-500 transition hover:text-white cursor-pointer"
           >
             ×
           </button>
@@ -122,7 +122,7 @@ export default function TermsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-white/10 px-5 py-3 text-sm text-gray-300 transition hover:bg-white/5"
+            className="rounded-xl border border-white/10 px-5 py-3 text-sm text-gray-300 transition hover:bg-white/5 cursor-pointer"
           >
             Cancelar
           </button>
@@ -130,7 +130,7 @@ export default function TermsModal({
           <button
             type="button"
             onClick={onAccept}
-            className="rounded-xl bg-[#C7962D] px-5 py-3 text-sm font-semibold text-black transition hover:opacity-90"
+            className="rounded-xl bg-[#C7962D] px-5 py-3 text-sm font-semibold text-black transition hover:opacity-90 cursor-pointer"
           >
             Aceptar y continuar
           </button>
