@@ -16,13 +16,14 @@ export const getTrainingRequests = async (
 export const getMyTrainingRequests = async (
   token: string,
 ) => {
-  return await api("/training-requests/me", {
+  const response = await api("/training-requests/me", {
     method: "GET",
 
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
 export const getTrainingRequestById = async (
