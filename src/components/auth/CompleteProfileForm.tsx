@@ -110,8 +110,10 @@ export default function CompleteProfileForm() {
             <option value="Argentina">🇦🇷 Argentina</option>
             <option value="Uruguay">🇺🇾 Uruguay</option>
             <option value="Chile">🇨🇱 Chile</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
             <option value="Brasil">🇧🇷 Brasil</option>
             <option value="México">🇲🇽 México</option>
+            <option value="Perú">🇵🇪 Perú</option>
             <option value="España">🇪🇸 España</option>
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>

@@ -15,10 +15,11 @@ export const getTrainingRequests = async (
 
 export const getMyTrainingRequests = async (
   token: string,
+  page: number = 1,
+  limit: number = 10
 ) => {
-  return await api("/training-requests/me", {
+  return await api(`/training-requests/me?page=${page}&limit=${limit}`, {
     method: "GET",
-
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -31,7 +32,6 @@ export const getTrainingRequestById = async (
 ) => {
   return await api(`/training-requests/${id}`, {
     method: "GET",
-
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -49,11 +49,9 @@ export const createTrainingRequest = async (
 ) => {
   return await api("/training-requests", {
     method: "POST",
-
     headers: {
       Authorization: `Bearer ${token}`,
     },
-
     body: JSON.stringify(payload),
   });
 };
@@ -69,11 +67,9 @@ export const editTrainingRequest = async (
 ) => {
   return await api(`/training-requests/${id}`, {
     method: "PATCH",
-
     headers: {
       Authorization: `Bearer ${token}`,
     },
-
     body: JSON.stringify(payload),
   });
 };
@@ -87,11 +83,9 @@ export const updateTrainingRequest = async (
 ) => {
   return await api(`/training-requests/${id}/status`, {
     method: "PATCH",
-
     headers: {
       Authorization: `Bearer ${token}`,
     },
-
     body: JSON.stringify(payload),
   });
 };

@@ -20,6 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 🚀 Fusionado: Mantiene tu ruta de "/casos" que tu compañero no tenía
   const isPublicRoute =
     pathname === "/" ||
     pathname === "/autenticacion" ||
@@ -48,8 +49,13 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // 🚀 Fusionado: Redirección inteligente basada en el rol del usuario
     if (pathname === "/autenticacion" || isCompleteProfilePage) {
-      return NextResponse.redirect(new URL("/", request.url));
+      if (user.role === "admin") {
+        return NextResponse.redirect(new URL("/admin/requests", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
 
     return NextResponse.next();
