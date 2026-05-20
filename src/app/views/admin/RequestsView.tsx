@@ -39,7 +39,7 @@ export default function RequestsView() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);  
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -70,15 +70,12 @@ export default function RequestsView() {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-
       await updateTrainingRequest(id, { status: newStatus }, token);
-
       setRequests((prev) =>
         prev.map((req) =>
           req.id === id ? { ...req, status: newStatus } : req,
         ),
       );
-
       toast.success("Estado actualizado correctamente");
     } catch (error) {
       console.error("Error actualizando estado", error);
@@ -127,42 +124,24 @@ export default function RequestsView() {
                       </td>
                       <td className="p-4 max-w-xs truncate">{req.objectives}</td>
                       <td className="p-4 space-y-2">
-                        <span
-                          className={`text-xs px-2 py-1 rounded block w-fit ${statusStyles[req.status]}`}
-                        >
-                          {req.status === "pending"
-                            ? "Pendiente"
-                            : req.status === "confirmed"
-                            ? "Confirmada"
-                            : req.status === "cancelled"
-                            ? "Cancelada"
-                            : req.status === "scheduled"
-                            ? "Agendada"
-                            : req.status === "in_review"
-                            ? "En revisión"
+                        <span className={`text-xs px-2 py-1 rounded block w-fit ${statusStyles[req.status]}`}>
+                          {req.status === "pending" ? "Pendiente"
+                            : req.status === "confirmed" ? "Confirmada"
+                            : req.status === "cancelled" ? "Cancelada"
+                            : req.status === "scheduled" ? "Agendada"
+                            : req.status === "in_review" ? "En revisión"
                             : "Esperando pago"}
                         </span>
                         <select
                           value={req.status}
                           disabled={req.status === "cancelled"}
-                          onChange={(e) =>
-                            handleStatusChange(
-                              req.id,
-                              e.target.value as Request["status"],
-                            )
-                          }
+                          onChange={(e) => handleStatusChange(req.id, e.target.value as Request["status"])}
                           className="bg-transparent border border-white/10 rounded px-2 py-1 text-xs text-gray-300 cursor-pointer disabled:opacity-50"
                         >
-                          <option value="pending" disabled={req.status !== "pending"}>
-                            Pendiente
-                          </option>
-                          <option value="in_review" disabled={req.status === "scheduled"}>
-                            En revisión
-                          </option>
+                          <option value="pending" disabled={req.status !== "pending"}>Pendiente</option>
+                          <option value="in_review" disabled={req.status === "scheduled"}>En revisión</option>
                           <option value="awaiting_payment">Esperando pago</option>
-                          <option value="confirmed" disabled={req.status === "scheduled"}>
-                            Confirmada
-                          </option>
+                          <option value="confirmed" disabled={req.status === "scheduled"}>Confirmada</option>
                           <option value="scheduled">Agendada</option>
                           <option value="cancelled">Cancelada</option>
                         </select>
@@ -190,11 +169,9 @@ export default function RequestsView() {
               >
                 ← Anterior
               </button>
-
               <span className="text-sm text-gray-400">
                 Página <strong className="text-white">{page}</strong> de <strong className="text-white">{totalPages}</strong>
               </span>
-
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
@@ -204,7 +181,6 @@ export default function RequestsView() {
               </button>
             </div>
           )}
-
         </div>
       </div>
     </AdminLayout>

@@ -12,6 +12,8 @@ import { loginUser } from "@/services/auth.service";
 import { loginSchema } from "@/validations/login.validations";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type LoginFormProps = {
   onSwitchToRegister: () => void;
@@ -19,34 +21,28 @@ type LoginFormProps = {
 
 export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
   const { login } = useUser();
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(e.currentTarget);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, touchedFields },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+  });
 
-    const payload = {
-      email: formData.get("email")?.toString() || "",
-      password: formData.get("password")?.toString() || "",
-    };
-
-    const result = loginSchema.safeParse(payload);
-
-    if (!result.success) {
-      toast.warning(result.error.issues[0].message);
-      return;
-    }
-
+  const onSubmit = async (data: any) => {
     try {
-      const data = await loginUser(result.data);
-      const token = data.access_token;
+      const res = await loginUser(data);
+      const token = res.access_token;
 
       login(token);
       toast.success("Login exitoso");
-      form.reset();
+      document.cookie = `userSession=${token}; path=/; max-age=604800; SameSite=Lax`;
+
       const returnTo = searchParams.get("returnTo");
       const pending = localStorage.getItem("pendingRequest");
 
@@ -55,31 +51,56 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       } else if (pending) {
         const { trainingId, categoria } = JSON.parse(pending);
         localStorage.removeItem("pendingRequest");
-        router.push(
-          `/solicitudes?categoria=${encodeURIComponent(categoria)}&trainingId=${trainingId}`,
-        );
+        router.push(`/solicitudes?categoria=${encodeURIComponent(categoria)}&trainingId=${trainingId}`);
       } else {
         router.push("/");
       }
-
-    } catch (err: any) {
+    } catch {
       toast.error("Credenciales incorrectas");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+   <form
+  onSubmit={handleSubmit(
+    onSubmit,
+    (errors) => {
+      const hasEmptyFields = Object.values(errors).some(
+        (error) =>
+          error?.message === "El email es obligatorio" ||
+          error?.message === "La contraseña es obligatoria"
+      );
+
+      if (hasEmptyFields) {
+        toast.warning("Debes completar todos los campos");
+      }
+    }
+  )}
+  noValidate
+  className="space-y-5"
+>
       <GoogleButton />
 
       <div className="text-center text-gray-500">o</div>
 
-      <Input name="email" type="email" placeholder="Correo electrónico" />
+      <div>
+        <Input
+          type="email"
+          placeholder="Correo electrónico"
+          {...register("email")}
+        />
+     {touchedFields.email && errors.email?.message && (
+  <p className="text-red-500 text-xs mt-1">
+    {String(errors.email.message)}
+  </p>
+)}
+      </div>
 
       <div className="relative">
         <Input
-          name="password"
           type={showPassword ? "text" : "password"}
           placeholder="Contraseña"
+          {...register("password")}
         />
         <button
           type="button"
@@ -88,6 +109,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
+       {touchedFields.password && errors.password?.message && (
+  <p className="text-red-500 text-xs mt-1">
+    {String(errors.password.message)}
+  </p>
+)}
       </div>
 
       <div className="flex items-center justify-between text-sm">
@@ -100,7 +126,10 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </span>
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button
+        type="submit"
+        className="w-full"
+      >
         Acceder
       </Button>
 

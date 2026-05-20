@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -14,9 +13,7 @@ import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
-import { socket } from "@/lib/socket";
-
- export type DecodedToken = {
+export type DecodedToken = {
   id: string;
 
   email: string;
@@ -52,7 +49,6 @@ export function UserProvider({
 }: {
   children: React.ReactNode;
 }) {
-
   const [token, setToken] =
     useState<string | null>(null);
 
@@ -63,79 +59,93 @@ export function UserProvider({
 
   const router = useRouter();
 
-  const [isHydrated, setIsHydrated] =
-    useState(false);
+  const [
+    isHydrated,
+    setIsHydrated,
+  ] = useState(false);
 
-useEffect(() => {
-  const storedToken = localStorage.getItem("token");
+  useEffect(() => {
+    const storedToken =
+      localStorage.getItem("token");
 
-  if (!storedToken) {
-    setIsHydrated(true);
-    return;
-  }
+    if (!storedToken) {
+      setIsHydrated(true);
 
-  try {
-    if (storedToken.split(".").length !== 3) {
-      throw new Error("Token inválido");
+      return;
     }
 
-    setToken(storedToken);
+    try {
+      if (
+        storedToken.split(".")
+          .length !== 3
+      ) {
+        throw new Error(
+          "Token inválido",
+        );
+      }
 
-    const decoded = jwtDecode<DecodedToken>(storedToken);
-    setUser(decoded);
+      setToken(storedToken);
 
-    localStorage.setItem("user", JSON.stringify(decoded));
+      const decoded =
+        jwtDecode<DecodedToken>(
+          storedToken,
+        );
 
-  } catch (err) {
+      setUser(decoded);
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+      localStorage.setItem(
+        "user",
+        JSON.stringify(decoded),
+      );
+    } catch (err) {
+      localStorage.removeItem(
+        "token",
+      );
 
-    setToken(null);
-    setUser(null);
-  }
+      localStorage.removeItem(
+        "user",
+      );
 
-  setIsHydrated(true);
-}, []);
+      setToken(null);
 
-useEffect(() => {
-  if (!user?.id) return;
+      setUser(null);
+    }
 
-  socket.connect();
-  socket.emit("join", user.id);
+    setIsHydrated(true);
+  }, []);
 
-  const handler = (notification: any) => {
-    toast.success(notification.message || "Nueva notificación");
-  };
+  const login = (
+    newToken: string,
+  ) => {
+    try {
+      localStorage.setItem(
+        "token",
+        newToken,
+      );
 
-  socket.on("notification:new", handler);
-
-  return () => {
-    socket.off("notification:new", handler);
-    socket.disconnect();
-  };
-}, [user?.id]);
-
-const login = (newToken: string) => {
-  try {
-    localStorage.setItem("token", newToken);
-
-    document.cookie = `userSession=${newToken}; path=/; max-age=86400`;
+      document.cookie = `userSession=${newToken}; path=/; max-age=86400`;
 
     setToken(newToken);
 
-    const decoded = jwtDecode<DecodedToken>(newToken);
+      const decoded =
+        jwtDecode<DecodedToken>(
+          newToken,
+        );
 
-    localStorage.setItem("user", JSON.stringify(decoded));
+      localStorage.setItem(
+        "user",
+        JSON.stringify(decoded),
+      );
 
-    setUser(decoded);
-  } catch (error) {
-    toast.error("Token inválido");
-  }
-};
+      setUser(decoded);
+    } catch (error) {
+      toast.error(
+        "Token inválido",
+      );
+    }
+  };
 
   const logout = () => {
-
     localStorage.removeItem(
       "token",
     );
@@ -144,7 +154,8 @@ const login = (newToken: string) => {
       "user",
     );
 
-    document.cookie = "userSession=; path=/; max-age=0";
+    document.cookie =
+      "userSession=; path=/; max-age=0";
 
     setToken(null);
 
@@ -160,7 +171,6 @@ const login = (newToken: string) => {
   return (
     <UserContext.Provider
       value={{
-
         token,
 
         user,
@@ -168,7 +178,8 @@ const login = (newToken: string) => {
         isAuthenticated:
           !!token,
 
-        isProfileCompleted: !!user?.profileCompleted,
+        isProfileCompleted:
+          !!user?.profileCompleted,
 
         isHydrated,
 
@@ -183,16 +194,13 @@ const login = (newToken: string) => {
 }
 
 export function useUserContext() {
-
   const context =
     useContext(UserContext);
 
   if (!context) {
-
     throw new Error(
       "useUserContext debe usarse dentro de UserProvider",
     );
-
   }
 
   return context;

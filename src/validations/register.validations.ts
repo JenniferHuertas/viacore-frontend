@@ -48,9 +48,7 @@ export const registerSchema = z
        
     country: z
       .string()
-      .min(1, "El país es obligatorio")
-      .min(2, "El país debe tener mínimo 2 caracteres")
-      .max(50, "El país debe tener máximo 50 caracteres"),
+      .min(1, "El país es obligatorio"),
 
       address: z
       .string()
@@ -69,9 +67,16 @@ export const registerSchema = z
       .min(1, "La empresa es obligatoria")
       .min(2, "La empresa debe tener al menos 2 caracteres")
       .max(50, "La empresa no puede tener más de 50 caracteres"),
+
+     acceptedTerms: z.boolean(),
   })
 
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",
     path: ["confirmPassword"],
+  })
+
+  .refine((data) => data.acceptedTerms === true, {
+    message: "Debes aceptar los términos y condiciones",
+    path: ["acceptedTerms"],
   });

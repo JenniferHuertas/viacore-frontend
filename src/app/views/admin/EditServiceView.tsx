@@ -750,7 +750,7 @@ export default function EditServiceView({
                           index,
                         )
                       }
-                      className="text-red-400"
+                      className="text-red-400 cursor-pointer" 
                     >
                       ×
                     </button>
@@ -808,7 +808,7 @@ export default function EditServiceView({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+            className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
           >
             {saving
               ? "Guardando..."

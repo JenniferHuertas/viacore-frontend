@@ -230,7 +230,7 @@ export default function RequestDetailView({
           </div>
 
           <Link href="/admin/requests">
-            <button className="text-sm text-[#C7962D] hover:underline">
+            <button className="text-sm text-[#C7962D] hover:underline cursor-pointer">
               ← Volver
             </button>
           </Link>

@@ -23,24 +23,6 @@ export default function UsersView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      if (!token) return;
-
-      const data = await getUsers(token);
-
-      setUsers(data);
-    } catch (error) {
-      console.error("Error obteniendo usuarios", error);
-
-      toast.error("Error obteniendo usuarios");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -59,6 +41,7 @@ export default function UsersView() {
         }
       } catch (error) {
         console.error("Error obteniendo usuarios", error);
+        toast.error("Error obteniendo usuarios");
       } finally {
         setLoading(false);
       }

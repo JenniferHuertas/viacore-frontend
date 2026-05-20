@@ -31,8 +31,7 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-[#070707]/80 backdrop-blur border-b border-white/10">
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center gap-8">
-        
-        {/* LOGO */}
+   
         <Link href="/" className="flex items-center gap-4 shrink-0">
           <img src="/images/logo.png" alt="Viacore" className="h-9" />
           <span className="text-sm font-semibold text-white">VIACORE</span>
@@ -40,7 +39,6 @@ export default function Navbar() {
         
         {!isAuthPage && (
           <>
-            {/* NAV DESKTOP */}
             <nav className="hidden lg:flex flex-1 items-center justify-center gap-8 text-sm text-gray-200">
               <Link href="/plataforma" className="hover:text-white transition">
                 Plataforma
@@ -61,7 +59,6 @@ export default function Navbar() {
               )}
             </nav>
 
-            {/* MOBILE MENU TOGGLE */}
             <button
               onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
               className="lg:hidden text-white text-2xl ml-auto"
@@ -80,7 +77,6 @@ export default function Navbar() {
                   </span>
                 </div>
 
-                {/* LOGOUT DESKTOP */}
                 <button
                   onClick={handleLogout}
                   className="hidden md:block px-5 py-2 rounded-md text-sm font-semibold border border-[#C7962D] text-[#C7962D] hover:bg-[#C7962D] hover:text-black transition cursor-pointer whitespace-nowrap"
@@ -99,8 +95,7 @@ export default function Navbar() {
           </>
         )}
       </div>
-
-      {/* MOBILE MENU DROPDOWN */}
+      
       {open && !isAuthPage && (
         <div 
           className="lg:hidden bg-[#070707] border-t border-white/10 flex flex-col px-6 py-6 gap-4 text-sm text-gray-200 relative z-50"
@@ -131,7 +126,6 @@ export default function Navbar() {
                 </span>
               </div>
               
-              {/* LOGOUT MOBILE */}
               <button
                 onClick={() => {
                   handleLogout();

@@ -10,6 +10,7 @@ type InputProps =
 export default function Input({
   type = "text",
   error,
+  className = "",
   ...props
 }: InputProps) {
   return (
@@ -36,6 +37,8 @@ export default function Input({
           }
 
           focus:ring-1
+
+          ${className}
         `}
       />
 

@@ -30,7 +30,13 @@ export const completeProfile = async (
     address: string;
   },
 ) => {
-  const token = localStorage.getItem("token");
+    const token = document.cookie
+    .split("; ")
+    .find((row) =>
+      row.startsWith("userSession="),
+    )
+    ?.split("=")[1];
+    console.log(token);
 
   if (!token) {
     throw new Error("No token found");

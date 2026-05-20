@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import AdminLayout from "@/components/admin/AdminLayout";
 
@@ -24,68 +21,49 @@ type Training = {
 };
 
 export default function AdminView() {
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [stats, setStats] =
-    useState({
-      users: 0,
+  const [stats, setStats] = useState({
+    users: 0,
 
-      requests: 0,
+    requests: 0,
 
-      trainings: 0,
-    });
+    trainings: 0,
+  });
 
-  const [trainings, setTrainings] =
-    useState<Training[]>([]);
+  const [trainings, setTrainings] = useState<Training[]>([]);
 
   useEffect(() => {
-    const fetchDashboard =
-      async () => {
-        try {
-          const token =
-            localStorage.getItem(
-              "token",
-            );
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-          if (!token) return;
+        if (!token) return;
 
-          const [
-            users,
-            requests,
-            trainingsData,
-          ] = await Promise.all([
-            getUsers(token),
+        const [usersData, requests, trainingsData] = await Promise.all([
+          getUsers(token),
 
-            getTrainingRequests(
-              token,
-            ),
+          getTrainingRequests(token),
 
-            getAllTrainings(),
-          ]);
+          getAllTrainings(),
+        ]);
 
-          setStats({
-            users: users.length,
+        const requestsArray = requests?.data ?? [];
+        setStats({
+          users: usersData.total,
 
-            requests:
-              requests.filter((r: any) => r.status == "confirmed").length,
+          requests: requestsArray.filter((r: any) => r.status !== "confirmed").length,
 
-            trainings:
-              requests.filter((req: any) => req.status != "confirmed").length,
-          });
+          trainings: requestsArray.filter((req: any) => req.status === "confirmed").length,
+        });
 
-          setTrainings(
-            trainingsData,
-          );
-        } catch (error) {
-          console.error(
-            "Error cargando dashboard",
-            error,
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
+        setTrainings(trainingsData);
+      } catch (error) {
+        console.error("Error cargando dashboard", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchDashboard();
   }, []);
@@ -93,9 +71,7 @@ export default function AdminView() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="text-gray-400">
-          Cargando dashboard...
-        </div>
+        <div className="text-gray-400">Cargando dashboard...</div>
       </AdminLayout>
     );
   }
@@ -104,9 +80,7 @@ export default function AdminView() {
     <AdminLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-semibold text-white">
-            Dashboard
-          </h1>
+          <h1 className="text-3xl font-semibold text-white">Dashboard</h1>
 
           <div className="h-0.5 w-16 bg-[#C7962D] mt-3" />
 
@@ -117,9 +91,7 @@ export default function AdminView() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl bg-[#0B0D0F] border border-white/10 shadow-lg">
-            <p className="text-gray-400 text-sm">
-              Usuarios
-            </p>
+            <p className="text-gray-400 text-sm">Usuarios</p>
 
             <p className="text-3xl font-semibold text-white mt-2">
               {stats.users}
@@ -127,9 +99,7 @@ export default function AdminView() {
           </div>
 
           <div className="p-6 rounded-2xl bg-[#0B0D0F] border border-white/10 shadow-lg">
-            <p className="text-gray-400 text-sm">
-              Solicitudes
-            </p>
+            <p className="text-gray-400 text-sm">Solicitudes</p>
 
             <p className="text-3xl font-semibold text-white mt-2">
               {stats.requests}
@@ -137,9 +107,7 @@ export default function AdminView() {
           </div>
 
           <div className="p-6 rounded-2xl bg-[#0B0D0F] border border-white/10 shadow-lg">
-            <p className="text-gray-400 text-sm">
-              Capacitaciones
-            </p>
+            <p className="text-gray-400 text-sm">Capacitaciones</p>
 
             <p className="text-3xl font-semibold text-white mt-2">
               {stats.trainings}
@@ -159,39 +127,33 @@ export default function AdminView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {trainings.map(
-              (training) => (
-                <div
-                  key={training.id}
-                  className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6"
-                >
-                  <h3 className="text-lg font-semibold text-white">
-                    {
-                      training.title
-                    }
-                  </h3>
+            {trainings.map((training) => (
+              <div
+                key={training.id}
+                className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6"
+              >
+                <h3 className="text-lg font-semibold text-white">
+                  {training.title}
+                </h3>
 
-                  <p className="mt-3 text-sm text-gray-400">
-                    {
-                      training.shortDescription
-                    }
-                  </p>
+                <p className="mt-3 text-sm text-gray-400">
+                  {training.shortDescription}
+                </p>
 
-                  <div className="mt-6 flex items-center gap-4">
-                    <Link
-                      href={`/admin/services/${training.id}/edit`}
-                      className="text-sm text-[#C7962D] hover:underline"
-                    >
-                      Editar
-                    </Link>
+                <div className="mt-6 flex items-center gap-4">
+                  <Link
+                    href={`/admin/services/${training.id}/edit`}
+                    className="text-sm text-[#C7962D] hover:underline cursor-pointer"
+                  >
+                    Editar
+                  </Link>
 
-                    <button className="text-sm text-red-400 hover:underline">
-                      Eliminar
-                    </button>
-                  </div>
+                  <button className="text-sm text-red-400 hover:underline cursor-pointer">
+                    Eliminar
+                  </button>
                 </div>
-              ),
-            )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

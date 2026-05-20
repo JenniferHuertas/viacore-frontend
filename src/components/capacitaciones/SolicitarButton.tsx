@@ -13,8 +13,6 @@ export default function SolicitarButton({ trainingTitle, trainingId }: Props) {
   const router = useRouter();
   const { isAuthenticated } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Armamos la URL destino, cuidando que el título no rompa la URL si tiene espacios
   const formUrl = `/solicitudes?categoria=${encodeURIComponent(trainingTitle)}&trainingId=${trainingId}`;
 
   const handleSolicitar = (e: React.MouseEvent) => {
@@ -35,7 +33,6 @@ export default function SolicitarButton({ trainingTitle, trainingId }: Props) {
         Solicitar capacitación
       </button>
 
-      {/* MODAL MODERNO */}
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#0f0f0f] border border-white/10 rounded-xl p-6 max-w-md w-full shadow-2xl relative">
@@ -50,14 +47,14 @@ export default function SolicitarButton({ trainingTitle, trainingId }: Props) {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowAuthModal(false)}
-                className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition"
+                className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition cursor-pointer"
               >
                 Cancelar
               </button>
               
               <button
                 onClick={() => router.push(`/autenticacion?returnTo=${encodeURIComponent(formUrl)}`)}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-[#C7962D] text-black hover:opacity-90 transition"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-[#C7962D] text-black hover:opacity-90 transition cursor-pointer"
               >
                 Ingresar / Registrarme
               </button>
