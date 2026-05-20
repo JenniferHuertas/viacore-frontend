@@ -344,18 +344,6 @@ export default function CreateServiceForm({
 
       setLoading(true);
 
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
-
-        toast.warning(
-          "Debes iniciar sesión",
-        );
-
-        return;
-      }
-
       const formData =
         new FormData();
 
@@ -401,7 +389,6 @@ export default function CreateServiceForm({
 
       await createTraining(
         formData,
-        token,
       );
 
       toast.success(
@@ -689,7 +676,8 @@ export default function CreateServiceForm({
       </div>
 
       <Button
-        onClick={handleSubmit} className="cursor-pointer"
+        onClick={handleSubmit}
+        className="cursor-pointer"
       >
         {loading
           ? "Guardando..."

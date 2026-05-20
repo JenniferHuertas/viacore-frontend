@@ -2,10 +2,6 @@
 
 import React, { useState } from "react";
 
-import { jwtDecode } from "jwt-decode";
-
-import type { ZodIssue } from "zod";
-
 import Input from "@/components/ui/Input";
 
 import Button from "@/components/ui/Button";
@@ -16,16 +12,7 @@ import { toast } from "sonner";
 
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
 
-import { useUserContext } from "@/context/UserContext";
-
-type DecodedToken = {
-  id: string;
-};
-
 export default function CompleteProfileForm() {
-  const { login } =
-    useUserContext();
-
   const [formData, setFormData] =
     useState({
       phone: "",
@@ -70,7 +57,7 @@ export default function CompleteProfileForm() {
       > = {};
 
       result.error.issues.forEach(
-        (issue: ZodIssue) => {
+        (issue) => {
           const field =
             issue.path[0] as string;
 
@@ -80,20 +67,16 @@ export default function CompleteProfileForm() {
       );
 
       setErrors(fieldErrors);
+
     } else {
       setErrors({});
     }
   };
 
   const handleSubmit = async (
-    e: React.FormEvent,
+    e: React.SyntheticEvent,
   ) => {
     e.preventDefault();
-
-    const token =
-      localStorage.getItem("token");
-
-    if (!token) return;
 
     const validation =
       completeProfileSchema.safeParse(
@@ -107,7 +90,7 @@ export default function CompleteProfileForm() {
       > = {};
 
       validation.error.issues.forEach(
-        (issue: ZodIssue) => {
+        (issue) => {
           const field =
             issue.path[0] as string;
 
@@ -125,34 +108,12 @@ export default function CompleteProfileForm() {
       return;
     }
 
-    const decoded =
-      jwtDecode<DecodedToken>(
-        token,
-      );
-
     try {
       setLoading(true);
 
-      const res =
-        await completeProfile(
-          decoded.id,
-          token,
-          formData,
-        );
-
-      console.log(
-        "Respuesta del backend:",
-        res,
+      await completeProfile(
+        formData,
       );
-
-      localStorage.setItem(
-        "token",
-        res.access_token,
-      );
-
-      document.cookie = `userSession=${res.access_token}; path=/; max-age=604800; SameSite=Lax`;
-
-      login(res.access_token);
 
       setFormData({
         phone: "",
@@ -169,12 +130,14 @@ export default function CompleteProfileForm() {
       );
 
       window.location.href = "/";
+
     } catch (err) {
       console.error(err);
 
       toast.error(
         "Error al completar perfil",
       );
+
     } finally {
       setLoading(false);
     }
@@ -186,6 +149,7 @@ export default function CompleteProfileForm() {
       className="space-y-5"
     >
       <div className="grid grid-cols-2 gap-4">
+
         <div>
           <Input
             name="phone"
@@ -197,8 +161,7 @@ export default function CompleteProfileForm() {
           />
 
           <p className="mt-2 text-xs text-gray-500">
-            Número de contacto de la
-            empresa
+            Número de contacto de la empresa
           </p>
         </div>
 
@@ -237,6 +200,14 @@ export default function CompleteProfileForm() {
               🇲🇽 México
             </option>
 
+            <option value="Colombia">
+              🇨🇴 Colombia
+            </option>
+
+            <option value="Perú">
+              🇵🇪 Perú
+            </option>
+
             <option value="España">
               🇪🇸 España
             </option>
@@ -253,8 +224,7 @@ export default function CompleteProfileForm() {
           )}
 
           <p className="text-xs text-gray-500">
-            País donde opera la
-            empresa
+            País donde opera la empresa
           </p>
         </div>
 
@@ -299,10 +269,10 @@ export default function CompleteProfileForm() {
           />
 
           <p className="mt-2 text-xs text-gray-500">
-            Nombre de la empresa o
-            institución
+            Nombre de la empresa o institución
           </p>
         </div>
+
       </div>
 
       <Button
