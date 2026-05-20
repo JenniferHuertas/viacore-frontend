@@ -3,7 +3,7 @@ import { api } from "./api";
 export const getTrainingRequests = async (
   token: string,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ) => {
   return await api(`/training-requests?page=${page}&limit=${limit}`, {
     method: "GET",
@@ -13,9 +13,7 @@ export const getTrainingRequests = async (
   });
 };
 
-export const getMyTrainingRequests = async (
-  token: string,
-) => {
+export const getMyTrainingRequests = async (token: string) => {
   const response = await api("/training-requests/me", {
     method: "GET",
 
@@ -23,13 +21,10 @@ export const getMyTrainingRequests = async (
       Authorization: `Bearer ${token}`,
     },
   });
-  return response.data;
+  return response.data ?? response;
 };
 
-export const getTrainingRequestById = async (
-  id: string,
-  token: string,
-) => {
+export const getTrainingRequestById = async (id: string, token: string) => {
   return await api(`/training-requests/${id}`, {
     method: "GET",
 
