@@ -3,18 +3,6 @@ import {
   NextResponse,
 } from "next/server";
 
-import { jwtDecode } from "jwt-decode";
-
-type DecodedToken = {
-  id: string;
-
-  email: string;
-
-  role: string;
-
-  profileCompleted: boolean;
-};
-
 const PUBLIC_ROUTES = [
   "/",
   "/autenticacion",
@@ -42,6 +30,7 @@ export function middleware(
     request.nextUrl;
 
   // Static files
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -51,6 +40,7 @@ export function middleware(
   }
 
   // OAuth routes
+
   if (
     AUTH_EXCLUDED_ROUTES.some(
       (route) =>
@@ -78,7 +68,8 @@ export function middleware(
       "userSession",
     )?.value;
 
-  // User not logged
+  // Usuario no autenticado
+
   if (!token) {
 
     if (isPublicRoute) {
@@ -93,66 +84,8 @@ export function middleware(
     );
   }
 
-  try {
+  // Si hay cookie, dejar pasar.
+  // El backend valida JWT real.
 
-    const user =
-      jwtDecode<DecodedToken>(
-        token,
-      );
-
-    const isCompleteProfilePage =
-      pathname ===
-      "/completar-perfil";
-
-    // User incomplete profile
-    if (
-      !user.profileCompleted
-    ) {
-
-      if (
-        !isCompleteProfilePage
-      ) {
-        return NextResponse.redirect(
-          new URL(
-            "/completar-perfil",
-            request.url,
-          ),
-        );
-      }
-
-      return NextResponse.next();
-    }
-
-    // User already completed profile
-    if (
-      isCompleteProfilePage ||
-      pathname ===
-        "/autenticacion"
-    ) {
-      return NextResponse.redirect(
-        new URL(
-          "/",
-          request.url,
-        ),
-      );
-    }
-
-    return NextResponse.next();
-
-  } catch {
-
-    const response =
-      NextResponse.redirect(
-        new URL(
-          "/autenticacion",
-          request.url,
-        ),
-      );
-
-    response.cookies.delete(
-      "userSession",
-    );
-
-    return response;
-  }
+  return NextResponse.next();
 }
