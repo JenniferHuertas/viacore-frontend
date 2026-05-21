@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import {
+  useEffect,
+} from "react";
+
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
+
 import { useUser } from "@/hooks/useUser";
 
 export default function ProtectedRoute({
@@ -9,24 +16,77 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const { isHydrated, user } = useUser();
+  const router =
+    useRouter();
 
-  const isAdminRoute = pathname.startsWith("/admin");
+  const pathname =
+    usePathname();
+
+  const {
+    isHydrated,
+    user,
+    isAuthenticated,
+  } = useUser();
+
+  const isAdminRoute =
+    pathname.startsWith(
+      "/admin",
+    );
+
+  const isAdmin =
+    user?.role
+      ?.toLowerCase() ===
+    "admin";
 
   useEffect(() => {
+
     if (!isHydrated) return;
 
-    if (isAdminRoute && user?.role !== "admin") {
+    // Esperar estado real
+
+    if (
+      isAdminRoute &&
+      isAuthenticated &&
+      !isAdmin
+    ) {
+
       router.replace("/");
     }
-  }, [isHydrated, isAdminRoute, user, router]);
 
-  if (!isHydrated) return null;
+  }, [
+    isHydrated,
+    isAdminRoute,
+    isAdmin,
+    isAuthenticated,
+    router,
+  ]);
 
-  if (isAdminRoute && user?.role !== "admin") return null;
+  // Esperar hidratación
+
+  if (!isHydrated) {
+    return null;
+  }
+
+  // Si es ruta admin y NO está logueado
+  // evitar render roto
+
+  if (
+    isAdminRoute &&
+    !isAuthenticated
+  ) {
+    return null;
+  }
+
+  // Si está logueado pero no es admin
+
+  if (
+    isAdminRoute &&
+    isAuthenticated &&
+    !isAdmin
+  ) {
+    return null;
+  }
 
   return <>{children}</>;
 }

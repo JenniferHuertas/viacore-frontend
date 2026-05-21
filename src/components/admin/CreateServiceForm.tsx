@@ -164,15 +164,9 @@ const handleSubmit = async () => {
     return;
   }
 
-  try {
-    setLoading(true);
+    try {
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.warning("Debes iniciar sesión");
-      return;
-    }
+      setLoading(true);
 
     const formData = new FormData();
 
@@ -182,13 +176,24 @@ const handleSubmit = async () => {
     formData.append("tagline", form.tagline);
     formData.append("category", form.category);
 
-    form.includes.forEach((i) =>
-      formData.append("includes", i)
-    );
+      form.includes.forEach(
+        (item) => {
 
-    formData.append("file", form.file!);
+          formData.append(
+            "includes",
+            item,
+          );
+        },
+      );
 
-    await createTraining(formData, token);
+      formData.append(
+        "file",
+        form.file!,
+      );
+
+      await createTraining(
+        formData,
+      );
 
     toast.success("Servicio creado correctamente");
 
@@ -330,8 +335,13 @@ const handleSubmit = async () => {
         )}
       </div>
 
-      <Button onClick={handleSubmit} className="cursor-pointer">
-        {loading ? "Guardando..." : "Guardar servicio"}
+      <Button
+        onClick={handleSubmit}
+        className="cursor-pointer"
+      >
+        {loading
+          ? "Guardando..."
+          : "Guardar servicio"}
       </Button>
 
     </div>

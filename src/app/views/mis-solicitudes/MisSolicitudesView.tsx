@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { getMyTrainingRequests } from "@/services/trainingRequests.service";
+import {
+  getMyTrainingRequests,
+} from "@/services/trainingRequests.service";
 
 import { socket } from "@/lib/socket";
 
@@ -40,21 +45,11 @@ export default function MisSolicitudesView() {
 
     const fetchRequests =
       async () => {
+
         try {
 
-          const token =
-            localStorage.getItem(
-              "token",
-            );
-
-          if (!token) {
-            return;
-          }
-
           const data =
-            await getMyTrainingRequests(
-              token,
-            );
+            await getMyTrainingRequests();
 
           setSolicitudes(data);
 
@@ -75,17 +70,8 @@ export default function MisSolicitudesView() {
       "notification:new",
       async () => {
 
-        const token =
-          localStorage.getItem(
-            "token",
-          );
-
-        if (!token) return;
-
         const updatedRequests =
-          await getMyTrainingRequests(
-            token,
-          );
+          await getMyTrainingRequests();
 
         setSolicitudes(
           updatedRequests,
@@ -103,110 +89,117 @@ export default function MisSolicitudesView() {
   }, []);
 
   return (
-      <div className="bg-[#070707] text-white px-6 pt-32 pb-24 min-h-screen">
-        <div className="mx-auto max-w-5xl">
+    <div className="bg-[#070707] text-white px-6 pt-32 pb-24 min-h-screen">
+      <div className="mx-auto max-w-5xl">
 
-          <h1 className="text-3xl md:text-4xl font-semibold mb-10">
-            Mis solicitudes
-          </h1>
+        <h1 className="text-3xl md:text-4xl font-semibold mb-10">
+          Mis solicitudes
+        </h1>
 
-          {loading ? (
+        {loading ? (
+
+          <p className="text-gray-400">
+            Cargando solicitudes...
+          </p>
+
+        ) : solicitudes.length === 0 ? (
+
+          <div className="border border-white/10 rounded-xl bg-white/5 p-10 text-center">
             <p className="text-gray-400">
-              Cargando solicitudes...
+              Todavía no realizaste
+              ninguna solicitud.
             </p>
-          ) : solicitudes.length === 0 ? (
-            <div className="border border-white/10 rounded-xl bg-white/5 p-10 text-center">
-              <p className="text-gray-400">
-                Todavía no realizaste
-                ninguna solicitud.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
+          </div>
 
-              {solicitudes.map((sol) => {
+        ) : (
 
-                const estadoVisual =
-                  sol.status ===
-                  "confirmed"
-                    ? "Confirmado"
-                    : sol.status ===
-                      "cancelled"
-                    ? "Cancelado"
-                    : sol.status ===
-                      "scheduled"
-                    ? "Agendado"
-                    : sol.status ===
-                      "in_review"
-                    ? "En revisión"
-                    : sol.status ===
-                      "awaiting_payment"
-                    ? "Esperando pago"
-                    : "Pendiente";
+          <div className="space-y-6">
 
-                return (
-                  <div
-                    key={sol.id}
-                    className="border border-white/10 p-6 rounded-xl bg-white/5 flex flex-col md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
+            {solicitudes.map((sol) => {
 
-                      <h3 className="text-lg font-semibold">
-                        {sol.training.title}
-                      </h3>
+              const estadoVisual =
+                sol.status ===
+                "confirmed"
+                  ? "Confirmado"
+                  : sol.status ===
+                    "cancelled"
+                  ? "Cancelado"
+                  : sol.status ===
+                    "scheduled"
+                  ? "Agendado"
+                  : sol.status ===
+                    "in_review"
+                  ? "En revisión"
+                  : sol.status ===
+                    "awaiting_payment"
+                  ? "Esperando pago"
+                  : "Pendiente";
 
-                      <p className="text-gray-400 text-sm">
-                        Fecha:{" "}
-                        {new Date(
-                          sol.createdAt,
-                        ).toLocaleDateString(
-                          "es-AR",
-                        )}
-                      </p>
+              return (
+                <div
+                  key={sol.id}
+                  className="border border-white/10 p-6 rounded-xl bg-white/5 flex flex-col md:flex-row md:items-center md:justify-between"
+                >
 
-                    </div>
+                  <div>
 
-                    <div className="mt-4 md:mt-0 flex items-center gap-4">
+                    <h3 className="text-lg font-semibold">
+                      {sol.training.title}
+                    </h3>
 
-                      <span
-                        className={`px-3 py-1 text-sm rounded-full ${
-                          estadoVisual ===
-                          "Pendiente"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : estadoVisual ===
-                                "Confirmado"
-                            ? "bg-green-500/20 text-green-400"
-                            : estadoVisual ===
-                                "Cancelado"
-                            ? "bg-red-500/20 text-red-400"
-                            : estadoVisual ===
-                                "Agendado"
-                            ? "bg-purple-500/20 text-purple-400"
-                            : estadoVisual ===
-                                "En revisión"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-orange-500/20 text-orange-400"
-                        }`}
-                      >
-                        {estadoVisual}
-                      </span>
+                    <p className="text-gray-400 text-sm">
+                      Fecha:{" "}
+                      {new Date(
+                        sol.createdAt,
+                      ).toLocaleDateString(
+                        "es-AR",
+                      )}
+                    </p>
 
-                      <Link
-                        href={`/mis-solicitudes/${sol.id}`}
-                        className="text-sm text-[#C7962D] hover:underline"
-                      >
-                        Ver detalle
-                      </Link>
-
-                    </div>
                   </div>
-                );
-              })}
 
-            </div>
-          )}
+                  <div className="mt-4 md:mt-0 flex items-center gap-4">
 
-        </div>
+                    <span
+                      className={`px-3 py-1 text-sm rounded-full ${
+                        estadoVisual ===
+                        "Pendiente"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : estadoVisual ===
+                              "Confirmado"
+                          ? "bg-green-500/20 text-green-400"
+                          : estadoVisual ===
+                              "Cancelado"
+                          ? "bg-red-500/20 text-red-400"
+                          : estadoVisual ===
+                              "Agendado"
+                          ? "bg-purple-500/20 text-purple-400"
+                          : estadoVisual ===
+                              "En revisión"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "bg-orange-500/20 text-orange-400"
+                      }`}
+                    >
+                      {estadoVisual}
+                    </span>
+
+                    <Link
+                      href={`/mis-solicitudes/${sol.id}`}
+                      className="text-sm text-[#C7962D] hover:underline"
+                    >
+                      Ver detalle
+                    </Link>
+
+                  </div>
+
+                </div>
+              );
+            })}
+
+          </div>
+        )}
+
       </div>
+    </div>
   );
 }

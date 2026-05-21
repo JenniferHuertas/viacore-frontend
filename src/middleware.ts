@@ -1,14 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
-import { jwtDecode } from "jwt-decode";
-import { DecodedToken } from "./context/UserContext";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+const PUBLIC_ROUTES = [
+  "/",
+  "/autenticacion",
+  "/contacto",
+];
 
-  // ============================
-  // 🚀 INICIO CAMBIO IMPORTANTE
-  // ============================
-  // Dejar pasar assets, API y archivos estáticos
+const PUBLIC_PREFIXES = [
+  "/plataforma",
+  "/capacitaciones",
+  "/casos",
+  "/pago",
+  "/solicitudes",
+];
+
+const AUTH_EXCLUDED_ROUTES = [
+  "/autenticacion/autenticacion-google",
+  "/auth/google/callback",
+];
+
+export function middleware(
+  request: NextRequest,
+) {
+
+  const { pathname } =
+    request.nextUrl;
+
+  // Static files
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -17,9 +39,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // OAuth routes
+
   if (
-    pathname.startsWith("/autenticacion/autenticacion-google") ||
-    pathname.startsWith("/auth/google/callback")
+    AUTH_EXCLUDED_ROUTES.some(
+      (route) =>
+        pathname.startsWith(
+          route,
+        ),
+    )
   ) {
     return NextResponse.next();
   }
@@ -52,34 +80,29 @@ export function middleware(request: NextRequest) {
 
   const token = request.cookies.get("userSession")?.value;
 
+  const token =
+    request.cookies.get(
+      "userSession",
+    )?.value;
+
+  // Usuario no autenticado
+
   if (!token) {
-    if (isProtectedRoute) {
-      return NextResponse.redirect(new URL("/autenticacion", request.url));
-    }
 
-    return NextResponse.next();
-  }
-
-  try {
-    const user = jwtDecode<DecodedToken>(token);
-
-    const isCompleteProfilePage = pathname === "/completar-perfil";
-
-    if (!user.profileCompleted) {
-      if (!isCompleteProfilePage) {
-        return NextResponse.redirect(
-          new URL("/completar-perfil", request.url)
-        );
-      }
+    if (isPublicRoute) {
       return NextResponse.next();
     }
 
-    if (pathname === "/autenticacion" || isCompleteProfilePage) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL("/autenticacion", request.url));
+    return NextResponse.redirect(
+      new URL(
+        "/autenticacion",
+        request.url,
+      ),
+    );
   }
+
+  // Si hay cookie, dejar pasar.
+  // El backend valida JWT real.
+
+  return NextResponse.next();
 }
