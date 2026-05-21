@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { toast } from "sonner";
 
-import GoogleButton from "./GoogleButton";
+import GoogleButton from "@/components/auth/GoogleButton";
 
 import Input from "@/components/ui/Input";
 
