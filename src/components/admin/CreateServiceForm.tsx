@@ -9,6 +9,8 @@ import Button from "@/components/ui/Button";
 import { createTraining } from "@/services/training.service";
 import { createServiceSchema } from "@/validations/createServiceValidator";
 
+import { useRouter } from "next/navigation";
+
 type FormDataType = {
   title: string;
   shortDescription: string;
@@ -20,7 +22,9 @@ type FormDataType = {
 };
 
 export default function CreateServiceForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const [form, setForm] = useState<FormDataType>({
     title: "",
@@ -43,52 +47,41 @@ export default function CreateServiceForm() {
   });
 
   const getErrors = () => {
-  const result = createServiceSchema.safeParse(form);
+    const result = createServiceSchema.safeParse(form);
 
-  if (result.success) return {};
+    if (result.success) return {};
 
-  const f = result.error.format();
+    const f = result.error.format();
 
-  return {
-    title: f.title?._errors?.[0],
-    shortDescription: f.shortDescription?._errors?.[0],
-    description: f.description?._errors?.[0],
-    tagline: f.tagline?._errors?.[0],
-    category: f.category?._errors?.[0],
-    includes: f.includes?._errors?.[0],
-    file: f.file?._errors?.[0],
+    return {
+      title: f.title?._errors?.[0],
+      shortDescription: f.shortDescription?._errors?.[0],
+      description: f.description?._errors?.[0],
+      tagline: f.tagline?._errors?.[0],
+      category: f.category?._errors?.[0],
+      includes: f.includes?._errors?.[0],
+      file: f.file?._errors?.[0],
+    };
   };
-};
 
-const errors = getErrors();
+  const errors = getErrors();
 
-const showError = (field: keyof FormDataType) => {
-  if (!touched[field]) return "";
+  const showError = (field: keyof FormDataType) => {
+    if (!submitAttempted && !touched[field]) return "";
 
-  const value = form[field];
+    const value = form[field];
 
-  if (typeof value === "string" && value.trim() === "") {
-    return "";
-  }
+    if (typeof value === "string" && value.trim() === "") return "";
 
-  if (
-    Array.isArray(value) &&
-    value.every((v) => v.trim() === "")
-  ) {
-    return "";
-  }
+    if (Array.isArray(value) && value.every((v) => v.trim() === "")) return "";
 
-  if (value === null) {
-    return "";
-  }
+    if (value === null) return "";
 
-  return errors[field] || "";
-};
+    return errors[field] || "";
+  };
 
   const inputClass = (field: keyof FormDataType) =>
-    showError(field)
-      ? "border-red-500"
-      : "border-white/10";
+    showError(field) ? "border-red-500" : "border-white/10";
 
   const handleChange = (field: keyof FormDataType, value: any) => {
     setForm((prev) => ({
@@ -97,29 +90,26 @@ const showError = (field: keyof FormDataType) => {
     }));
   };
 
-const handleBlur = (field: keyof FormDataType) => {
-  const value = form[field];
+  const handleBlur = (field: keyof FormDataType) => {
+    const value = form[field];
 
-  if (typeof value === "string" && value.trim() === "") {
-    return;
-  }
+    if (typeof value === "string" && value.trim() === "") {
+      return;
+    }
 
-  if (
-    Array.isArray(value) &&
-    value.every((v) => v.trim() === "")
-  ) {
-    return;
-  }
+    if (Array.isArray(value) && value.every((v) => v.trim() === "")) {
+      return;
+    }
 
-  if (value === null) {
-    return;
-  }
+    if (value === null) {
+      return;
+    }
 
-  setTouched((prev) => ({
-    ...prev,
-    [field]: true,
-  }));
-};
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+  };
 
   const handleIncludeChange = (index: number, value: string) => {
     const updated = [...form.includes];
@@ -145,78 +135,52 @@ const handleBlur = (field: keyof FormDataType) => {
     }));
   };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
+    const result = createServiceSchema.safeParse(form);
 
-  const result = createServiceSchema.safeParse(form);
+    if (!result.success) {
+      setTouched({
+        title: true,
+        shortDescription: true,
+        description: true,
+        tagline: true,
+        category: true,
+        includes: true,
+        file: true,
+      });
 
-  if (!result.success) {
-    setTouched({
-      title: true,
-      shortDescription: true,
-      description: true,
-      tagline: true,
-      category: true,
-      includes: true,
-      file: true,
-    });
-
-    toast.warning("Debes completar todos los campos");
-    return;
-  }
+      setSubmitAttempted(true);
+      return;
+    }
 
     try {
-
       setLoading(true);
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    formData.append("title", form.title);
-    formData.append("shortDescription", form.shortDescription);
-    formData.append("description", form.description);
-    formData.append("tagline", form.tagline);
-    formData.append("category", form.category);
+      formData.append("title", form.title);
+      formData.append("shortDescription", form.shortDescription);
+      formData.append("description", form.description);
+      formData.append("tagline", form.tagline);
+      formData.append("category", form.category);
 
-      form.includes.forEach(
-        (item) => {
+      form.includes.forEach((i) => formData.append("includes", i));
 
-          formData.append(
-            "includes",
-            item,
-          );
-        },
-      );
+      formData.append("file", form.file!);
 
-      formData.append(
-        "file",
-        form.file!,
-      );
+      await createTraining(formData);
 
-      await createTraining(
-        formData,
-      );
-
-    toast.success("Servicio creado correctamente");
-
-    setForm({
-      title: "",
-      shortDescription: "",
-      description: "",
-      tagline: "",
-      category: "",
-      includes: [""],
-      file: null,
-    });
-
-  } catch (error) {
-    toast.error("Error al guardar el servicio");
-  } finally {
-    setLoading(false);
-  }
-};
+      toast.success("Servicio creado correctamente");
+      router.push("/admin/services");
+    } catch {
+      toast.error("Error al guardar el servicio");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-xl space-y-5">
-
       <div className="space-y-2">
         <Input
           placeholder="Título"
@@ -239,7 +203,9 @@ const handleSubmit = async () => {
           className={inputClass("shortDescription")}
         />
         {showError("shortDescription") && (
-          <p className="text-sm text-red-400">{showError("shortDescription")}</p>
+          <p className="text-sm text-red-400">
+            {showError("shortDescription")}
+          </p>
         )}
       </div>
 
@@ -290,9 +256,7 @@ const handleSubmit = async () => {
             <Input
               placeholder="Ej: Diagnóstico de equipo"
               value={item}
-              onChange={(e) =>
-                handleIncludeChange(index, e.target.value)
-              }
+              onChange={(e) => handleIncludeChange(index, e.target.value)}
               className={inputClass("includes")}
             />
 
@@ -323,9 +287,7 @@ const handleSubmit = async () => {
         <input
           type="file"
           accept="image/*"
-          onChange={(e) =>
-            handleChange("file", e.target.files?.[0] || null)
-          }
+          onChange={(e) => handleChange("file", e.target.files?.[0] || null)}
           onBlur={() => handleBlur("file")}
           className={`block w-full text-sm text-gray-300 rounded-xl border p-3 bg-white/5 ${inputClass("file")}`}
         />
@@ -335,15 +297,9 @@ const handleSubmit = async () => {
         )}
       </div>
 
-      <Button
-        onClick={handleSubmit}
-        className="cursor-pointer"
-      >
-        {loading
-          ? "Guardando..."
-          : "Guardar servicio"}
+      <Button onClick={handleSubmit} className="cursor-pointer">
+        {loading ? "Guardando..." : "Guardar servicio"}
       </Button>
-
     </div>
   );
 }

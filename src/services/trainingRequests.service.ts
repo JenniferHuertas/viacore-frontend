@@ -14,16 +14,10 @@ export const getTrainingRequests =
     );
   };
 
-export const getMyTrainingRequests =
-  async () => {
-
-    return await api(
-      "/training-requests/me",
-      {
-        method: "GET",
-      },
-    );
-  };
+export const getMyTrainingRequests = async () => {
+  const res = await api("/training-requests/me", { method: "GET" });
+  return res.data ?? [];
+};
 
 export const getTrainingRequestById =
   async (
