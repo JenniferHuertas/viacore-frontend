@@ -15,6 +15,9 @@ const PUBLIC_PREFIXES = [
   "/casos",
   "/pago",
   "/solicitudes",
+  "/mis-solicitudes",
+  "/perfil",
+  "/completar-perfil",
 ];
 
 const AUTH_EXCLUDED_ROUTES = [
@@ -84,8 +87,13 @@ export function middleware(
     );
   }
 
-  // Si hay cookie, dejar pasar.
-  // El backend valida JWT real.
+  // Usuario autenticado
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
+};
