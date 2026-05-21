@@ -15,22 +15,36 @@ export default function ProtectedRoute({
   const isAdminRoute = pathname.startsWith("/admin");
   const isAdmin = user?.role?.toLowerCase() === "admin";
 
+  console.log("🔍 ProtectedRoute:", {
+    pathname,
+    isHydrated,
+    isAuthenticated,
+    isAdminRoute,
+    isAdmin,
+    userRole: user?.role,
+  });
+
   useEffect(() => {
     if (!isHydrated) return;
 
+    console.log("⚡ useEffect disparado:", {
+      isAdminRoute,
+      isAuthenticated,
+      isAdmin,
+    });
+
     if (isAdminRoute && !isAuthenticated) {
-      router.replace("/auth/login"); // o la ruta que uses
+      console.log("❌ Redirigiendo: no autenticado");
+      router.replace("/autenticacion");
     }
 
     if (isAdminRoute && isAuthenticated && !isAdmin) {
+      console.log("❌ Redirigiendo: no es admin");
       router.replace("/");
     }
   }, [isHydrated, isAdminRoute, isAdmin, isAuthenticated, router]);
 
-  // Esperar hidratación siempre
   if (!isHydrated) return null;
-
-  // Redirigiendo — no renderizar nada todavía
   if (isAdminRoute && !isAuthenticated) return null;
   if (isAdminRoute && isAuthenticated && !isAdmin) return null;
 
