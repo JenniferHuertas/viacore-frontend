@@ -83,7 +83,7 @@ export default function CreateServiceForm() {
   const inputClass = (field: keyof FormDataType) =>
     showError(field) ? "border-red-500" : "border-white/10";
 
-  const handleChange = (field: keyof FormDataType, value: any) => {
+  const handleChange = (field: keyof FormDataType, value: unknown) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
