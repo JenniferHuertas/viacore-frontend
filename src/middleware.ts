@@ -1,7 +1,4 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -25,14 +22,13 @@ const AUTH_EXCLUDED_ROUTES = [
   "/auth/google/callback",
 ];
 
-export function middleware(
-  request: NextRequest,
-) {
+// Rutas que requieren autenticación pero el middleware solo deja pasar
+const PROTECTED_PREFIXES = [
+  "/admin",
+];
 
-  const { pathname } =
-    request.nextUrl;
-
-  // Static files
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
   if (
     pathname.startsWith("/_next") ||
@@ -42,53 +38,29 @@ export function middleware(
     return NextResponse.next();
   }
 
-  // OAuth routes
-
-  if (
-    AUTH_EXCLUDED_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    )
-  ) {
+  if (AUTH_EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
   const isPublicRoute =
-    PUBLIC_ROUTES.includes(
-      pathname,
-    ) ||
-    PUBLIC_PREFIXES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    );
+    PUBLIC_ROUTES.includes(pathname) ||
+    PUBLIC_PREFIXES.some((route) => pathname.startsWith(route));
 
-  const token =
-    request.cookies.get(
-      "userSession",
-    )?.value;
+  const isProtectedRoute = PROTECTED_PREFIXES.some((route) =>
+    pathname.startsWith(route),
+  );
 
-  // Usuario no autenticado
+  const token = request.cookies.get("userSession")?.value;
 
+  // Sin token
   if (!token) {
-
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
-
-    return NextResponse.redirect(
-      new URL(
-        "/autenticacion",
-        request.url,
-      ),
-    );
+    if (isPublicRoute) return NextResponse.next();
+    // Rutas protegidas sin token → autenticacion
+    return NextResponse.redirect(new URL("/autenticacion", request.url));
   }
 
-  // Usuario autenticado
-
+  // Con token → dejar pasar siempre
+  // La validación de rol admin la hace ProtectedRoute en el cliente
   return NextResponse.next();
 }
 
