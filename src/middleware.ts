@@ -1,32 +1,8 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
-const PUBLIC_ROUTES = [
-  "/",
-  "/autenticacion",
-  "/contacto",
-];
-const PUBLIC_PREFIXES = [
-  "/plataforma",
-  "/capacitaciones",
-  "/casos",
-  "/pago",
-  "/solicitudes",
-  "/mis-solicitudes",
-  "/perfil",
-  "/completar-perfil",
-];
-const AUTH_EXCLUDED_ROUTES = [
-  "/autenticacion/autenticacion-google",
-  "/auth/google/callback",
-];
-export function middleware(
-  request: NextRequest,
-) {
-  const { pathname } =
-    request.nextUrl;
-  // Static files
+import { NextRequest, NextResponse } from "next/server";
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -34,46 +10,10 @@ export function middleware(
   ) {
     return NextResponse.next();
   }
-  // OAuth routes
-  if (
-    AUTH_EXCLUDED_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    )
-  ) {
-    return NextResponse.next();
-  }
-  const isPublicRoute =
-    PUBLIC_ROUTES.includes(
-      pathname,
-    ) ||
-    PUBLIC_PREFIXES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    );
-  const token =
-    request.cookies.get(
-      "userSession",
-    )?.value;
-  // Usuario no autenticado
-  if (!token) {
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
-    return NextResponse.redirect(
-      new URL(
-        "/autenticacion",
-        request.url,
-      ),
-    );
-  }
-  // Usuario autenticado
+
   return NextResponse.next();
 }
+
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico).*)",
