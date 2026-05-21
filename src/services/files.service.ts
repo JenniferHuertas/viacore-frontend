@@ -1,24 +1,18 @@
 import { api } from "./api";
 
-export const uploadFile = (
-  requestId: string,
-  formData: FormData,
-) => {
-  const token =
-    localStorage.getItem(
-      "token",
-    );
+export const uploadFile =
+  (
+    requestId: string,
 
-  return api(
-    `/training-requests/${requestId}/upload-evidence`,
-    {
-      method: "POST",
+    formData: FormData,
+  ) => {
 
-      headers: {
-        Authorization: `Bearer ${token}`,
+    return api(
+      `/training-requests/${requestId}/upload-evidence`,
+      {
+        method: "POST",
+
+        body: formData,
       },
-
-      body: formData,
-    },
-  );
-};
+    );
+  };

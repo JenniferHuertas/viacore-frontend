@@ -24,6 +24,7 @@ type FormDataType = {
 export default function CreateServiceForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const [form, setForm] = useState<FormDataType>({
     title: "",
@@ -44,8 +45,6 @@ export default function CreateServiceForm() {
     includes: false,
     file: false,
   });
-
-  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const getErrors = () => {
     const result = createServiceSchema.safeParse(form);
@@ -69,7 +68,16 @@ export default function CreateServiceForm() {
 
   const showError = (field: keyof FormDataType) => {
     if (!submitAttempted && !touched[field]) return "";
-    return errors[field];
+
+    const value = form[field];
+
+    if (typeof value === "string" && value.trim() === "") return "";
+
+    if (Array.isArray(value) && value.every((v) => v.trim() === "")) return "";
+
+    if (value === null) return "";
+
+    return errors[field] || "";
   };
 
   const inputClass = (field: keyof FormDataType) =>
@@ -83,6 +91,20 @@ export default function CreateServiceForm() {
   };
 
   const handleBlur = (field: keyof FormDataType) => {
+    const value = form[field];
+
+    if (typeof value === "string" && value.trim() === "") {
+      return;
+    }
+
+    if (Array.isArray(value) && value.every((v) => v.trim() === "")) {
+      return;
+    }
+
+    if (value === null) {
+      return;
+    }
+
     setTouched((prev) => ({
       ...prev,
       [field]: true,
@@ -114,18 +136,6 @@ export default function CreateServiceForm() {
   };
 
   const handleSubmit = async () => {
-    setTouched({
-      title: true,
-      shortDescription: true,
-      description: true,
-      tagline: true,
-      category: true,
-      includes: true,
-      file: true,
-    });
-
-    setSubmitAttempted(true);
-
     const result = createServiceSchema.safeParse(form);
 
     if (!result.success) {
@@ -139,19 +149,12 @@ export default function CreateServiceForm() {
         file: true,
       });
 
-      toast.warning("Debes completar todos los campos");
+      setSubmitAttempted(true);
       return;
     }
 
     try {
       setLoading(true);
-
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast.warning("Debes iniciar sesión");
-        return;
-      }
 
       const formData = new FormData();
 
@@ -165,11 +168,11 @@ export default function CreateServiceForm() {
 
       formData.append("file", form.file!);
 
-      await createTraining(formData, token);
+      await createTraining(formData);
 
       toast.success("Servicio creado correctamente");
       router.push("/admin/services");
-    } catch (error) {
+    } catch {
       toast.error("Error al guardar el servicio");
     } finally {
       setLoading(false);

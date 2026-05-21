@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import AdminLayout from "@/components/admin/AdminLayout";
-
 import { getUsers } from "@/services/users.service";
-
 import { getTrainingRequests } from "@/services/trainingRequests.service";
-
 import { getMeetings } from "@/services/meetings.service";
 import { getAllPayments } from "@/services/payments.service";
 
@@ -37,7 +33,6 @@ type Request = {
 
 export default function AdminView() {
   const [loading, setLoading] = useState(true);
-
   const [stats, setStats] = useState({
     users: 0,
     requests: 0,
@@ -46,31 +41,24 @@ export default function AdminView() {
     payments: 0,
     paymentsAmount: 0,
   });
-
   const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
   const [latestRequests, setLatestRequests] = useState<Request[]>([]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) return;
-
         const [usersData, requestsData, meetingsData, paymentsData] =
           await Promise.all([
-            getUsers(token),
-            getTrainingRequests(token),
-            getMeetings(token),
-            getAllPayments(token),
+            getUsers(),
+            getTrainingRequests(),
+            getMeetings(),
+            getAllPayments(),
           ]);
-        console.log("meetings:", meetingsData);
 
         const requests: Request[] = requestsData?.data ?? [];
         const meetings: Meeting[] = meetingsData ?? [];
         const payments: Payment[] = paymentsData ?? [];
 
-        // Métricas
         const approvedPayments = payments.filter(
           (p) => p.status === "approved",
         );
@@ -96,7 +84,6 @@ export default function AdminView() {
           paymentsAmount: totalAmount,
         });
 
-        // Próximas reuniones (las 3 más cercanas pendientes)
         const upcoming = meetings
           .filter((m) => m.status === 2 && new Date(m.date) >= now)
           .sort(
@@ -105,7 +92,6 @@ export default function AdminView() {
           .slice(0, 3);
         setUpcomingMeetings(upcoming);
 
-        // Últimas 3 solicitudes
         const latest = [...requests]
           .sort(
             (a, b) =>
@@ -134,7 +120,6 @@ export default function AdminView() {
   return (
     <AdminLayout>
       <div className="space-y-10">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-semibold text-white">Dashboard</h1>
           <div className="h-0.5 w-16 bg-[#C7962D] mt-3" />
@@ -143,7 +128,6 @@ export default function AdminView() {
           </p>
         </div>
 
-        {/* Métricas */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
           <StatCard label="Usuarios" value={stats.users} />
           <StatCard label="Solicitudes" value={stats.requests} />
@@ -159,9 +143,7 @@ export default function AdminView() {
           />
         </div>
 
-        {/* Detalle */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {/* Próximas reuniones */}
           <div className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6 space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-white">
@@ -198,7 +180,6 @@ export default function AdminView() {
             )}
           </div>
 
-          {/* Últimas solicitudes */}
           <div className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6 space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-white">
@@ -237,8 +218,6 @@ export default function AdminView() {
   );
 }
 
-// ── Componentes auxiliares ─────────────────────────────────────
-
 function StatCard({
   label,
   value,
@@ -265,11 +244,11 @@ function StatusBadge({ status }: { status: string }) {
     },
     scheduled: {
       label: "Agendada",
-      class: "bg-purple-500/10 text-purple-400 border-purple-500/20", // ← violeta
+      class: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     },
     in_review: {
       label: "En revisión",
-      class: "bg-blue-500/10 text-blue-400 border-blue-500/20", // ← azul
+      class: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     },
     confirmed: {
       label: "Confirmada",

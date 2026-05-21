@@ -1,10 +1,71 @@
+"use client";
+
 import Link from "next/link";
+
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import { getAllTrainings } from "@/services/training.service";
 
-export default async function PlataformaView() {
-  const trainings =
-    await getAllTrainings();
+type Training = {
+  id: string;
+
+  title: string;
+
+  shortDescription: string;
+
+  fileResource?: {
+    fileUrl: string;
+  };
+};
+
+export default function PlataformaView() {
+
+  const [trainings, setTrainings] =
+    useState<Training[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const fetchTrainings =
+    async () => {
+
+      try {
+
+        const data =
+          await getAllTrainings();
+
+        setTrainings(data);
+
+      } catch (error) {
+
+        console.error(
+          "Error loading trainings",
+          error,
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
+
+  useEffect(() => {
+
+    fetchTrainings();
+
+    const interval =
+      setInterval(
+        fetchTrainings,
+        5000,
+      );
+
+    return () =>
+      clearInterval(interval);
+
+  }, []);
 
   return (
     <div className="bg-[#070707] text-white px-6 py-24">
@@ -24,46 +85,58 @@ export default async function PlataformaView() {
 
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 auto-rows-fr">
+        {loading ? (
 
-          {trainings.map((training) => (
+          <div className="text-gray-400">
+            Cargando capacitaciones...
+          </div>
 
-            <Link
-              key={training.id}
-              href={`/capacitaciones/${training.id}`}
-            >
+        ) : (
 
-              <div className="cursor-pointer border border-white/10 rounded-xl bg-white/5 transition hover:border-[#C7962D] hover:bg-white/10 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(199,150,45,0.15)] h-full flex flex-col overflow-hidden">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 auto-rows-fr">
 
-                <img
-                  src={
-                    training
-                      .fileResource
-                      ?.fileUrl ||
-                    "/images/placeholder.png"
-                  }
-                  alt={training.title}
-                  className="w-full h-48 object-cover"
-                />
+            {trainings.map(
+              (training) => (
 
-                <div className="p-6 flex flex-col flex-1">
+                <Link
+                  key={training.id}
+                  href={`/capacitaciones/${training.id}`}
+                >
 
-                  <h3 className="text-lg font-semibold mb-2">
-                    {training.title}
-                  </h3>
+                  <div className="cursor-pointer border border-white/10 rounded-xl bg-white/5 transition hover:border-[#C7962D] hover:bg-white/10 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(199,150,45,0.15)] h-full flex flex-col overflow-hidden">
 
-                  <p className="text-gray-400 text-sm flex-1">
-                    {training.shortDescription}
-                  </p>
+                    <img
+                      src={
+                        training
+                          .fileResource
+                          ?.fileUrl ||
+                        "/images/placeholder.png"
+                      }
+                      alt={training.title}
+                      className="w-full h-48 object-cover"
+                    />
 
-                </div>
+                    <div className="p-6 flex flex-col flex-1">
 
-              </div>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {training.title}
+                      </h3>
 
-            </Link>
-          ))}
+                      <p className="text-gray-400 text-sm flex-1">
+                        {training.shortDescription}
+                      </p>
 
-        </div>
+                    </div>
+
+                  </div>
+
+                </Link>
+              ),
+            )}
+
+          </div>
+
+        )}
 
       </div>
 
