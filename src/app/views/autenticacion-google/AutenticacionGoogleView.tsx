@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
 } from "react";
 
 import {
@@ -21,7 +22,16 @@ export default function AutenticacionGoogleView() {
     refreshUser,
   } = useUserContext();
 
+  const executed =
+    useRef(false);
+
   useEffect(() => {
+
+    if (executed.current) {
+      return;
+    }
+
+    executed.current = true;
 
     const init =
       async () => {
