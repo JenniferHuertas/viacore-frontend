@@ -18,6 +18,7 @@ export default function AutenticacionGoogleView() {
 
   const {
     refreshUser,
+    user,
   } = useUserContext();
 
   useEffect(() => {
@@ -27,16 +28,34 @@ export default function AutenticacionGoogleView() {
 
         await refreshUser();
 
-        toast.success(
-          "Autenticación con Google exitosa",
-        );
-
-        router.push("/");
       };
 
     init();
 
-  }, [router, refreshUser]);
+  }, [refreshUser]);
+
+  useEffect(() => {
+
+    if (!user) {
+      return;
+    }
+
+    toast.success(
+      "Autenticación con Google exitosa",
+    );
+
+    if (!user.profileCompleted) {
+
+      router.replace(
+        "/completar-perfil",
+      );
+
+      return;
+    }
+
+    router.replace("/");
+
+  }, [user, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white">
