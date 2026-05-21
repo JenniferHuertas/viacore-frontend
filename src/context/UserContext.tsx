@@ -77,9 +77,23 @@ export function UserProvider({
 
         setUser(profile);
 
-      } catch {
+      } catch (error: any) {
 
-        setUser(null);
+        console.error(
+          "ERROR REFRESH USER",
+          error,
+        );
+
+        // SOLO limpiar usuario
+        // si realmente la sesión expiró
+
+        if (
+          error?.statusCode === 401
+        ) {
+
+          setUser(null);
+
+        }
 
       } finally {
 
