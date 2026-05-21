@@ -6,7 +6,7 @@ import React, {
 
 import { toast } from "sonner";
 
-import { contactSchema } from "@/validations/contactValidator";
+import { contactSchema } from "@/validations/contact.validations";
 
 import { sendContactMessage } from "@/services/contact.service";
 
@@ -18,6 +18,8 @@ export default function ContactoView() {
       empresa: "",
       mensaje: "",
     });
+
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [errors, setErrors] =
     useState<Record<string, string>>(
@@ -61,23 +63,59 @@ export default function ContactoView() {
     return true;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } =
-      e.target;
+        const handleBlur = (
+  e: React.FocusEvent<
+    HTMLInputElement | HTMLTextAreaElement
+  >,
+) => {
+  const { name } = e.target;
 
-    const updatedValues = {
-      ...form,
-      [name]: value,
-    };
+  setTouched((prev) => ({
+    ...prev,
+    [name]: true,
+  }));
+};
 
-    setForm(updatedValues);
+ const handleChange = (
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement
+  >,
+) => {
+  const { name, value } = e.target;
 
-    validateForm(updatedValues);
+  const updatedValues = {
+    ...form,
+    [name]: value,
   };
+
+  setForm(updatedValues);
+
+  const result =
+    contactSchema.safeParse(
+      updatedValues,
+    );
+
+  if (!result.success) {
+    const fieldErrors: Record<
+      string,
+      string
+    > = {};
+
+    result.error.issues.forEach(
+      (issue) => {
+        const field =
+          issue.path[0] as string;
+
+        fieldErrors[field] =
+          issue.message;
+      },
+    );
+
+    setErrors(fieldErrors);
+  } else {
+    setErrors({});
+  }
+};
 
   const handleSubmit = async (
     e: React.FormEvent,
@@ -88,6 +126,7 @@ export default function ContactoView() {
       validateForm(form);
 
     if (!isValid) {
+      toast.warning("Debes completar todos los campos")
       return;
     }
 
@@ -146,6 +185,7 @@ export default function ContactoView() {
               placeholder="Nombre"
               value={form.nombre}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={`
                 w-full
                 p-3
@@ -156,18 +196,18 @@ export default function ContactoView() {
                 transition
 
                 ${
-                  errors.nombre
+                  touched.nombre && errors.nombre
                     ? "border-red-500"
                     : "border-white/10 focus:border-[#C7962D]"
                 }
               `}
             />
 
-            {errors.nombre && (
-              <p className="text-sm text-red-400">
-                {errors.nombre}
-              </p>
-            )}
+          {touched.nombre && errors.nombre && (
+  <p className="text-sm text-red-400">
+    {errors.nombre}
+  </p>
+)}
 
           </div>
 
@@ -178,6 +218,7 @@ export default function ContactoView() {
               placeholder="Email"
               value={form.email}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={`
                 w-full
                 p-3
@@ -188,14 +229,14 @@ export default function ContactoView() {
                 transition
 
                 ${
-                  errors.email
+                 touched.email && errors.email
                     ? "border-red-500"
                     : "border-white/10 focus:border-[#C7962D]"
                 }
               `}
             />
 
-            {errors.email && (
+            {touched.email && errors.email && (
               <p className="text-sm text-red-400">
                 {errors.email}
               </p>
@@ -210,6 +251,7 @@ export default function ContactoView() {
               placeholder="Empresa"
               value={form.empresa}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={`
                 w-full
                 p-3
@@ -220,14 +262,14 @@ export default function ContactoView() {
                 transition
 
                 ${
-                  errors.empresa
+                 touched.empresa && errors.empresa
                     ? "border-red-500"
                     : "border-white/10 focus:border-[#C7962D]"
                 }
               `}
             />
 
-            {errors.empresa && (
+            {touched.empresa && errors.empresa && (
               <p className="text-sm text-red-400">
                 {errors.empresa}
               </p>
@@ -242,6 +284,7 @@ export default function ContactoView() {
               placeholder="Mensaje"
               value={form.mensaje}
               onChange={handleChange}
+              onBlur={handleBlur}
               rows={6}
               className={`
                 w-full
@@ -254,14 +297,14 @@ export default function ContactoView() {
                 transition
 
                 ${
-                  errors.mensaje
+                 touched.mensaje && errors.mensaje
                     ? "border-red-500"
                     : "border-white/10 focus:border-[#C7962D]"
                 }
               `}
             />
 
-            {errors.mensaje && (
+            {touched.mensaje && errors.mensaje && (
               <p className="text-sm text-red-400">
                 {errors.mensaje}
               </p>

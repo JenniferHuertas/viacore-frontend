@@ -2,10 +2,6 @@
 
 import React, { useState } from "react";
 
-import { jwtDecode } from "jwt-decode";
-
-import type { ZodIssue } from "zod";
-
 import Input from "@/components/ui/Input";
 
 import Button from "@/components/ui/Button";
@@ -16,16 +12,7 @@ import { toast } from "sonner";
 
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
 
-import { useUserContext } from "@/context/UserContext";
-
-type DecodedToken = {
-  id: string;
-};
-
 export default function CompleteProfileForm() {
-  const { login } =
-    useUserContext();
-
   const [formData, setFormData] =
     useState({
       phone: "",
@@ -36,20 +23,18 @@ export default function CompleteProfileForm() {
     });
 
   const [errors, setErrors] =
-    useState<Record<string, string>>(
-      {},
-    );
+    useState<Record<string, string>>({});
+
+  const [touched, setTouched] =
+    useState<Record<string, boolean>>({});
 
   const [loading, setLoading] =
     useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value } =
-      e.target;
+    const { name, value } = e.target;
 
     const updatedValues = {
       ...formData,
@@ -59,25 +44,15 @@ export default function CompleteProfileForm() {
     setFormData(updatedValues);
 
     const result =
-      completeProfileSchema.safeParse(
-        updatedValues,
-      );
+      completeProfileSchema.safeParse(updatedValues);
 
     if (!result.success) {
-      const fieldErrors: Record<
-        string,
-        string
-      > = {};
+      const fieldErrors: Record<string, string> = {};
 
-      result.error.issues.forEach(
-        (issue: ZodIssue) => {
-          const field =
-            issue.path[0] as string;
-
-          fieldErrors[field] =
-            issue.message;
-        },
-      );
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        fieldErrors[field] = issue.message;
+      });
 
       setErrors(fieldErrors);
     } else {
@@ -85,74 +60,49 @@ export default function CompleteProfileForm() {
     }
   };
 
+  const handleBlur = (
+    e: React.FocusEvent <HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
   const handleSubmit = async (
-    e: React.FormEvent,
+    e: React.SyntheticEvent,
   ) => {
     e.preventDefault();
 
-    const token =
-      localStorage.getItem("token");
-
-    if (!token) return;
-
     const validation =
-      completeProfileSchema.safeParse(
-        formData,
-      );
+      completeProfileSchema.safeParse(formData);
 
     if (!validation.success) {
-      const fieldErrors: Record<
-        string,
-        string
-      > = {};
+      const fieldErrors: Record<string, string> = {};
 
-      validation.error.issues.forEach(
-        (issue: ZodIssue) => {
-          const field =
-            issue.path[0] as string;
-
-          fieldErrors[field] =
-            issue.message;
-        },
-      );
+      validation.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        fieldErrors[field] = issue.message;
+      });
 
       setErrors(fieldErrors);
 
-      toast.error(
-        "Revisá los campos",
-      );
+      // Marcar todos como touched para mostrar todos los errores
+      setTouched({
+        phone: true,
+        country: true,
+        companyName: true,
+        city: true,
+        address: true,
+      });
+
+      toast.error("Revisá los campos");
 
       return;
     }
 
-    const decoded =
-      jwtDecode<DecodedToken>(
-        token,
-      );
-
     try {
       setLoading(true);
 
-      const res =
-        await completeProfile(
-          decoded.id,
-          token,
-          formData,
-        );
-
-      console.log(
-        "Respuesta del backend:",
-        res,
-      );
-
-      localStorage.setItem(
-        "token",
-        res.access_token,
-      );
-
-      document.cookie = `userSession=${res.access_token}; path=/; max-age=604800; SameSite=Lax`;
-
-      login(res.access_token);
+      await completeProfile(formData);
 
       setFormData({
         phone: "",
@@ -163,18 +113,14 @@ export default function CompleteProfileForm() {
       });
 
       setErrors({});
+      setTouched({});
 
-      toast.success(
-        "Perfil completado correctamente",
-      );
+      toast.success("Perfil completado correctamente");
 
       window.location.href = "/";
     } catch (err) {
       console.error(err);
-
-      toast.error(
-        "Error al completar perfil",
-      );
+      toast.error("Error al completar perfil");
     } finally {
       setLoading(false);
     }
@@ -186,6 +132,7 @@ export default function CompleteProfileForm() {
       className="space-y-5"
     >
       <div className="grid grid-cols-2 gap-4">
+
         <div>
           <Input
             name="phone"
@@ -193,12 +140,11 @@ export default function CompleteProfileForm() {
             placeholder="Teléfono"
             value={formData.phone}
             onChange={handleChange}
-            error={errors.phone}
+            onBlur={handleBlur}
+            error={touched.phone ? errors.phone : ""}
           />
-
           <p className="mt-2 text-xs text-gray-500">
-            Número de contacto de la
-            empresa
+            Número de contacto de la empresa
           </p>
         </div>
 
@@ -207,54 +153,31 @@ export default function CompleteProfileForm() {
             name="country"
             value={formData.country}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={`w-full rounded-xl border bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition ${
-              errors.country
+              touched.country && errors.country
                 ? "border-red-500"
                 : "border-white/10 focus:border-[#C7962D]"
             }`}
           >
-            <option value="">
-              🌍 Seleccionar país
-            </option>
-
-            <option value="Argentina">
-              🇦🇷 Argentina
-            </option>
-
-            <option value="Uruguay">
-              🇺🇾 Uruguay
-            </option>
-
-            <option value="Chile">
-              🇨🇱 Chile
-            </option>
-
-            <option value="Brasil">
-              🇧🇷 Brasil
-            </option>
-
-            <option value="México">
-              🇲🇽 México
-            </option>
-
-            <option value="España">
-              🇪🇸 España
-            </option>
-
-            <option value="Estados Unidos">
-              🇺🇸 Estados Unidos
-            </option>
+            <option value="">🌍 Seleccionar país</option>
+            <option value="Argentina">🇦🇷 Argentina</option>
+            <option value="Uruguay">🇺🇾 Uruguay</option>
+            <option value="Chile">🇨🇱 Chile</option>
+            <option value="Brasil">🇧🇷 Brasil</option>
+            <option value="México">🇲🇽 México</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
+            <option value="Perú">🇵🇪 Perú</option>
+            <option value="España">🇪🇸 España</option>
+            <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>
 
-          {errors.country && (
-            <p className="text-sm text-red-400">
-              {errors.country}
-            </p>
+          {touched.country && errors.country && (
+            <p className="text-sm text-red-400">{errors.country}</p>
           )}
 
           <p className="text-xs text-gray-500">
-            País donde opera la
-            empresa
+            País donde opera la empresa
           </p>
         </div>
 
@@ -265,9 +188,9 @@ export default function CompleteProfileForm() {
             placeholder="Ciudad"
             value={formData.city}
             onChange={handleChange}
-            error={errors.city}
+            onBlur={handleBlur}
+            error={touched.city ? errors.city : ""}
           />
-
           <p className="mt-2 text-xs text-gray-500">
             Ciudad principal
           </p>
@@ -280,9 +203,9 @@ export default function CompleteProfileForm() {
             placeholder="Dirección"
             value={formData.address}
             onChange={handleChange}
-            error={errors.address}
+            onBlur={handleBlur}
+            error={touched.address ? errors.address : ""}
           />
-
           <p className="mt-2 text-xs text-gray-500">
             Dirección empresarial
           </p>
@@ -295,23 +218,21 @@ export default function CompleteProfileForm() {
             placeholder="Empresa"
             value={formData.companyName}
             onChange={handleChange}
-            error={errors.companyName}
+            onBlur={handleBlur}
+            error={touched.companyName ? errors.companyName : ""}
           />
-
           <p className="mt-2 text-xs text-gray-500">
-            Nombre de la empresa o
-            institución
+            Nombre de la empresa o institución
           </p>
         </div>
+
       </div>
 
       <Button
         type="submit"
         disabled={loading}
       >
-        {loading
-          ? "Guardando..."
-          : "Finalizar configuración"}
+        {loading ? "Guardando..." : "Finalizar configuración"}
       </Button>
     </form>
   );
