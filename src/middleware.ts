@@ -29,7 +29,8 @@ export function middleware(request: NextRequest) {
     "/mis-solicitudes",
     "/admin",
     "/perfil",
-    "/solicitudes"
+    "/solicitudes",
+    "/agenda"
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
