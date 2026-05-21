@@ -1,37 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 
 type ConfirmacionPagoViewProps = {
   id: string;
 };
 
-export default function ConfirmacionPagoView({ id }: ConfirmacionPagoViewProps) {
-
-  useEffect(() => {
-  
-    const stored = localStorage.getItem("solicitudes");
-    const solicitudes = stored ? JSON.parse(stored) : [];
-
-   
-    const actualizadas = solicitudes.map((s: any) => {
-      if (s.id.toString() === id) {
-        return { ...s, estado: "Pagado" };
-      }
-      return s;
-    });
-
-    localStorage.setItem("solicitudes", JSON.stringify(actualizadas));
-
-  }, [id]);
+export default function ConfirmacionPagoView({
+  id,
+}: ConfirmacionPagoViewProps) {
 
   return (
     <div className="bg-[#070707] text-white px-6 pt-32 pb-24 min-h-screen flex items-center justify-center">
+
       <div className="max-w-xl w-full text-center">
 
         <div className="mb-6">
-          <span className="text-5xl">✔</span>
+          <span className="text-5xl">
+            ✔
+          </span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-semibold mb-4">
@@ -39,7 +26,10 @@ export default function ConfirmacionPagoView({ id }: ConfirmacionPagoViewProps) 
         </h1>
 
         <p className="text-gray-400 mb-10">
-          Tu solicitud fue confirmada. En breve nos pondremos en contacto para coordinar la capacitación.
+          Tu solicitud fue confirmada.
+          En breve nos pondremos
+          en contacto para coordinar
+          la capacitación.
         </p>
 
         <div className="space-y-4">
@@ -61,6 +51,7 @@ export default function ConfirmacionPagoView({ id }: ConfirmacionPagoViewProps) 
         </div>
 
       </div>
+
     </div>
   );
 }

@@ -1,30 +1,19 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-
+import { toast, toast as sonnerToast } from "sonner";
 import AdminLayout from "@/components/admin/AdminLayout";
-
 import Link from "next/link";
-
 import Image from "next/image";
-
 import Button from "@/components/ui/Button";
-
 import { deleteTraining, getAllTrainings } from "@/services/training.service";
-
 import { createPortal } from "react-dom";
-
-import { toast as sonnerToast } from "sonner";
 
 type Training = {
   id: string;
-
   title: string;
-
   shortDescription: string;
-
   category?: string;
-
   fileResource?: {
     fileUrl: string;
   };
@@ -77,28 +66,22 @@ function ConfirmDeleteModal({
 
 export default function ServicesView() {
   const [services, setServices] = useState<Training[]>([]);
-
   const [loading, setLoading] = useState(true);
-
   const [confirmModal, setConfirmModal] = useState<{
     id: string;
     title: string;
   } | null>(null);
-
   const [, startTransition] = useTransition();
 
   const fetchServices = async () => {
     try {
       const data = await getAllTrainings();
-      startTransition(() => {
-        setServices(data);
-      });
+      startTransition(() => setServices(data));
     } catch (error) {
       console.error("Error obteniendo servicios", error);
+      toast.error("Error obteniendo servicios");
     } finally {
-      startTransition(() => {
-        setLoading(false);
-      });
+      startTransition(() => setLoading(false));
     }
   };
 
@@ -112,13 +95,7 @@ export default function ServicesView() {
     setConfirmModal(null);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        sonnerToast.error("Debés iniciar sesión");
-        return;
-      }
-
-      await deleteTraining(id, token);
+      await deleteTraining(id);
       setServices((prev) => prev.filter((s) => s.id !== id));
       sonnerToast.success("Servicio eliminado correctamente");
     } catch (error) {
@@ -136,18 +113,16 @@ export default function ServicesView() {
           onCancel={() => setConfirmModal(null)}
         />
       )}
+
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-white">Servicios</h1>
-
             <div className="h-0.5 w-14 bg-[#C7962D] mt-3" />
-
             <p className="text-gray-400 mt-3">
               Gestión de capacitaciones disponibles.
             </p>
           </div>
-
           <Link href="/admin/services/create">
             <Button>+ Crear servicio</Button>
           </Link>
@@ -163,7 +138,6 @@ export default function ServicesView() {
               <h3 className="text-xl font-medium text-white">
                 No hay servicios cargados
               </h3>
-
               <p className="text-sm text-gray-400 mt-2">
                 Creá el primer servicio para comenzar a gestionar
                 capacitaciones.
@@ -196,7 +170,6 @@ export default function ServicesView() {
                         {service.category}
                       </span>
                     )}
-
                     <h2 className="text-xl font-semibold text-white mt-2">
                       {service.title}
                     </h2>
@@ -213,7 +186,6 @@ export default function ServicesView() {
                     >
                       Editar
                     </Link>
-
                     <button
                       onClick={() =>
                         setConfirmModal({

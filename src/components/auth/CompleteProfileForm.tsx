@@ -1,23 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-import type { ZodIssue } from "zod";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfile } from "@/services/auth.service";
 import { toast } from "sonner";
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
 
-type DecodedToken = {
-  id: string;
-};
-
 export default function CompleteProfileForm() {
-  const router = useRouter();
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
   const [formData, setFormData] = useState({
     phone: "",
     country: "",
@@ -27,65 +17,94 @@ export default function CompleteProfileForm() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   const [loading, setLoading] = useState(false);
 
-  const handleBlur = (
-  e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const { name } = e.target;
-
-  setTouched((prev) => ({
-    ...prev,
-    [name]: true,
-  }));
-};
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    const updatedValues = { ...formData, [name]: value };
+
+    const updatedValues = {
+      ...formData,
+      [name]: value,
+    };
+
     setFormData(updatedValues);
 
     const result = completeProfileSchema.safeParse(updatedValues);
+
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue: ZodIssue) => {
+
+      result.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
       });
+
       setErrors(fieldErrors);
     } else {
       setErrors({});
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     const validation = completeProfileSchema.safeParse(formData);
+
     if (!validation.success) {
       const fieldErrors: Record<string, string> = {};
-      validation.error.issues.forEach((issue: ZodIssue) => {
+
+      validation.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
       });
+
       setErrors(fieldErrors);
-      toast.warning("Debes completar todos los campos");
+
+      // Marcar todos como touched para mostrar todos los errores
+      setTouched({
+        phone: true,
+        country: true,
+        companyName: true,
+        city: true,
+        address: true,
+      });
+
+      toast.error("Revisá los campos");
+
       return;
     }
 
-    const decoded = jwtDecode<DecodedToken>(token);
-
     try {
       setLoading(true);
-      const res = await completeProfile(decoded.id, formData);
-      localStorage.setItem("token", res.access_token);
-      document.cookie = `userSession=${res.access_token}; path=/; max-age=604800; SameSite=Lax`;
-      setFormData({ phone: "", country: "", companyName: "", city: "", address: "" });
+
+      await completeProfile(formData);
+
+      setFormData({
+        phone: "",
+        country: "",
+        companyName: "",
+        city: "",
+        address: "",
+      });
+
       setErrors({});
-      router.push("/");
+      setTouched({});
+
+      toast.success("Perfil completado correctamente");
+
+      window.location.href = "/";
     } catch (err) {
       console.error(err);
       toast.error("Error al completar perfil");
@@ -107,7 +126,9 @@ export default function CompleteProfileForm() {
             onBlur={handleBlur}
             error={touched.phone ? errors.phone : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">Número de contacto de la empresa</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Número de contacto de la empresa
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -117,7 +138,9 @@ export default function CompleteProfileForm() {
             onChange={handleChange}
             onBlur={handleBlur}
             className={`w-full rounded-xl border bg-[#0D0D0D] px-4 py-3 text-sm text-white outline-none transition ${
-              errors.country ? "border-red-500" : "border-white/10 focus:border-[#C7962D]"
+              touched.country && errors.country
+                ? "border-red-500"
+                : "border-white/10 focus:border-[#C7962D]"
             }`}
           >
             <option value="">🌍 Seleccionar país</option>
@@ -126,14 +149,16 @@ export default function CompleteProfileForm() {
             <option value="Chile">🇨🇱 Chile</option>
             <option value="Brasil">🇧🇷 Brasil</option>
             <option value="México">🇲🇽 México</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
+            <option value="Perú">🇵🇪 Perú</option>
             <option value="España">🇪🇸 España</option>
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>
+
           {touched.country && errors.country && (
-  <p className="text-sm text-red-400">
-    {errors.country}
-  </p>
-)}
+            <p className="text-sm text-red-400">{errors.country}</p>
+          )}
+
           <p className="text-xs text-gray-500">País donde opera la empresa</p>
         </div>
 
@@ -171,9 +196,11 @@ export default function CompleteProfileForm() {
             value={formData.companyName}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.comnpanyName ? errors.companyName : ""}
+            error={touched.companyName ? errors.companyName : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">Nombre de la empresa o institución</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Nombre de la empresa o institución
+          </p>
         </div>
       </div>
 

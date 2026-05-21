@@ -7,13 +7,13 @@ import {
   useState,
 } from "react";
 
-import { jwtDecode } from "jwt-decode";
-
 import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
-export type DecodedToken = {
+import { api } from "@/services/api";
+
+export type User = {
   id: string;
 
   email: string;
@@ -24,9 +24,7 @@ export type DecodedToken = {
 };
 
 type UserContextType = {
-  token: string | null;
-
-  user: DecodedToken | null;
+  user: User | null;
 
   isAuthenticated: boolean;
 
@@ -34,9 +32,11 @@ type UserContextType = {
 
   isHydrated: boolean;
 
-  login: (token: string) => void;
+  login: () => Promise<void>;
 
-  logout: () => void;
+  logout: () => Promise<void>;
+
+  refreshUser: () => Promise<void>;
 };
 
 const UserContext =
@@ -49,134 +49,108 @@ export function UserProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [token, setToken] =
-    useState<string | null>(null);
 
   const [user, setUser] =
-    useState<DecodedToken | null>(
+    useState<User | null>(
       null,
     );
-
-  const router = useRouter();
 
   const [
     isHydrated,
     setIsHydrated,
   ] = useState(false);
 
-  useEffect(() => {
-    const storedToken =
-      localStorage.getItem("token");
+  const router = useRouter();
 
-    if (!storedToken) {
-      setIsHydrated(true);
+  const refreshUser =
+    async () => {
 
-      return;
-    }
+      try {
 
-    try {
-      if (
-        storedToken.split(".")
-          .length !== 3
-      ) {
-        throw new Error(
-          "Token inválido",
+        const profile =
+          await api(
+            "/auth/profile",
+            {
+              method: "GET",
+            },
+          );
+
+        setUser(profile);
+
+      } catch (error: any) {
+
+        console.error(
+          "ERROR REFRESH USER",
+          error,
         );
+
+        // SOLO limpiar usuario
+        // si realmente la sesión expiró
+
+        if (
+          error?.statusCode === 401
+        ) {
+
+          setUser(null);
+
+        }
+
+      } finally {
+
+        setIsHydrated(true);
+
       }
+    };
 
-      setToken(storedToken);
+  useEffect(() => {
 
-      const decoded =
-        jwtDecode<DecodedToken>(
-          storedToken,
-        );
+    refreshUser();
 
-      setUser(decoded);
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(decoded),
-      );
-    } catch (err) {
-      localStorage.removeItem(
-        "token",
-      );
-
-      localStorage.removeItem(
-        "user",
-      );
-
-      setToken(null);
-
-      setUser(null);
-    }
-
-    setIsHydrated(true);
   }, []);
 
-  const login = (
-    newToken: string,
-  ) => {
-    try {
-      localStorage.setItem(
-        "token",
-        newToken,
-      );
+  const login =
+    async () => {
 
-      document.cookie = `userSession=${newToken}; path=/; max-age=86400`;
+      await refreshUser();
 
-    setToken(newToken);
+    };
 
-      const decoded =
-        jwtDecode<DecodedToken>(
-          newToken,
+  const logout =
+    async () => {
+
+      try {
+
+        await api(
+          "/auth/logout",
+          {
+            method: "POST",
+          },
         );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(decoded),
-      );
+      } catch (error) {
 
-      setUser(decoded);
-    } catch (error) {
-      toast.error(
-        "Token inválido",
-      );
-    }
-  };
+        console.error(error);
 
-  const logout = () => {
-    localStorage.removeItem(
-      "token",
-    );
+      } finally {
 
-    localStorage.removeItem(
-      "user",
-    );
+        setUser(null);
 
-    document.cookie =
-      "userSession=; path=/; max-age=0";
+        router.push("/");
 
-    setToken(null);
-
-    setUser(null);
-
-    router.push("/");
-
-    toast.success(
-      "Sesión cerrada exitosamente",
-    );
-  };
+        toast.success(
+          "Sesión cerrada exitosamente",
+        );
+      }
+    };
 
   return (
     <UserContext.Provider
       value={{
-        token,
 
         user,
 
         isAuthenticated:
-          !!token,
+          !!user,
 
         isProfileCompleted:
           !!user?.profileCompleted,
@@ -186,6 +160,9 @@ export function UserProvider({
         login,
 
         logout,
+
+        refreshUser,
+
       }}
     >
       {children}
@@ -194,10 +171,14 @@ export function UserProvider({
 }
 
 export function useUserContext() {
+
   const context =
-    useContext(UserContext);
+    useContext(
+      UserContext,
+    );
 
   if (!context) {
+
     throw new Error(
       "useUserContext debe usarse dentro de UserProvider",
     );

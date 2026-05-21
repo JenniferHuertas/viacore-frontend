@@ -200,14 +200,6 @@ export default function EditServiceView({ id }: Props) {
     try {
       setSaving(true);
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast.warning("Debes iniciar sesión");
-
-        return;
-      }
-
       const formData = new FormData();
 
       formData.append("title", title);
@@ -228,7 +220,7 @@ export default function EditServiceView({ id }: Props) {
         formData.append("file", file);
       }
 
-      await updateTraining(id, formData, token);
+      await updateTraining(id, formData);
 
       toast.success("Servicio actualizado correctamente");
 
