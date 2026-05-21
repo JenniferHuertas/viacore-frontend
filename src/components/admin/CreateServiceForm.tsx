@@ -42,8 +42,6 @@ export default function CreateServiceForm() {
     file: false,
   });
 
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-
   const getErrors = () => {
   const result = createServiceSchema.safeParse(form);
 
@@ -64,9 +62,27 @@ export default function CreateServiceForm() {
 
 const errors = getErrors();
 
- const showError = (field: keyof FormDataType) => {
-  if (!submitAttempted && !touched[field]) return "";
-  return errors[field];
+const showError = (field: keyof FormDataType) => {
+  if (!touched[field]) return "";
+
+  const value = form[field];
+
+  if (typeof value === "string" && value.trim() === "") {
+    return "";
+  }
+
+  if (
+    Array.isArray(value) &&
+    value.every((v) => v.trim() === "")
+  ) {
+    return "";
+  }
+
+  if (value === null) {
+    return "";
+  }
+
+  return errors[field] || "";
 };
 
   const inputClass = (field: keyof FormDataType) =>
@@ -81,12 +97,29 @@ const errors = getErrors();
     }));
   };
 
-  const handleBlur = (field: keyof FormDataType) => {
-    setTouched((prev) => ({
-      ...prev,
-      [field]: true,
-    }));
-  };
+const handleBlur = (field: keyof FormDataType) => {
+  const value = form[field];
+
+  if (typeof value === "string" && value.trim() === "") {
+    return;
+  }
+
+  if (
+    Array.isArray(value) &&
+    value.every((v) => v.trim() === "")
+  ) {
+    return;
+  }
+
+  if (value === null) {
+    return;
+  }
+
+  setTouched((prev) => ({
+    ...prev,
+    [field]: true,
+  }));
+};
 
   const handleIncludeChange = (index: number, value: string) => {
     const updated = [...form.includes];
@@ -113,17 +146,6 @@ const errors = getErrors();
   };
 
 const handleSubmit = async () => {
-  setTouched({
-  title: true,
-  shortDescription: true,
-  description: true,
-  tagline: true,
-  category: true,
-  includes: true,
-  file: true,
-});
-
-setSubmitAttempted(true);
 
   const result = createServiceSchema.safeParse(form);
 
@@ -184,18 +206,6 @@ setSubmitAttempted(true);
       includes: [""],
       file: null,
     });
-
-    setTouched({
-      title: false,
-      shortDescription: false,
-      description: false,
-      tagline: false,
-      category: false,
-      includes: false,
-      file: false,
-    });
-
-    setSubmitAttempted(false);
 
   } catch (error) {
     toast.error("Error al guardar el servicio");

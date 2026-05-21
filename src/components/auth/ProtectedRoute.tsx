@@ -26,6 +26,7 @@ export default function ProtectedRoute({
   const {
     isHydrated,
     user,
+    isAuthenticated,
   } = useUser();
 
   const isAdminRoute =
@@ -42,8 +43,11 @@ export default function ProtectedRoute({
 
     if (!isHydrated) return;
 
+    // Esperar estado real
+
     if (
       isAdminRoute &&
+      isAuthenticated &&
       !isAdmin
     ) {
 
@@ -54,15 +58,31 @@ export default function ProtectedRoute({
     isHydrated,
     isAdminRoute,
     isAdmin,
+    isAuthenticated,
     router,
   ]);
+
+  // Esperar hidratación
 
   if (!isHydrated) {
     return null;
   }
 
+  // Si es ruta admin y NO está logueado
+  // evitar render roto
+
   if (
     isAdminRoute &&
+    !isAuthenticated
+  ) {
+    return null;
+  }
+
+  // Si está logueado pero no es admin
+
+  if (
+    isAdminRoute &&
+    isAuthenticated &&
     !isAdmin
   ) {
     return null;
