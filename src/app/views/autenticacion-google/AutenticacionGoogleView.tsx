@@ -14,11 +14,11 @@ import { useUserContext } from "@/context/UserContext";
 
 export default function AutenticacionGoogleView() {
 
-  const router = useRouter();
+  const router =
+    useRouter();
 
   const {
     refreshUser,
-    user,
   } = useUserContext();
 
   useEffect(() => {
@@ -26,36 +26,43 @@ export default function AutenticacionGoogleView() {
     const init =
       async () => {
 
-        await refreshUser();
+        const profile =
+          await refreshUser();
+
+        if (!profile) {
+
+          router.replace(
+            "/autenticacion",
+          );
+
+          return;
+        }
+
+        toast.success(
+          "Autenticación con Google exitosa",
+        );
+
+        if (
+          !profile.profileCompleted
+        ) {
+
+          router.replace(
+            "/completar-perfil",
+          );
+
+          return;
+        }
+
+        router.replace("/");
 
       };
 
     init();
 
-  }, [refreshUser]);
-
-  useEffect(() => {
-
-    if (!user) {
-      return;
-    }
-
-    toast.success(
-      "Autenticación con Google exitosa",
-    );
-
-    if (!user.profileCompleted) {
-
-      router.replace(
-        "/completar-perfil",
-      );
-
-      return;
-    }
-
-    router.replace("/");
-
-  }, [user, router]);
+  }, [
+    router,
+    refreshUser,
+  ]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white">
