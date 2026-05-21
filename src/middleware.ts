@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 const PUBLIC_ROUTES = [
   "/",
   "/autenticacion",
   "/contacto",
 ];
-
 const PUBLIC_PREFIXES = [
   "/plataforma",
   "/capacitaciones",
@@ -16,20 +17,16 @@ const PUBLIC_PREFIXES = [
   "/perfil",
   "/completar-perfil",
 ];
-
 const AUTH_EXCLUDED_ROUTES = [
   "/autenticacion/autenticacion-google",
   "/auth/google/callback",
 ];
-
-// Rutas que requieren autenticación pero el middleware solo deja pasar
-const PROTECTED_PREFIXES = [
-  "/admin",
-];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
+export function middleware(
+  request: NextRequest,
+) {
+  const { pathname } =
+    request.nextUrl;
+  // Static files
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -37,33 +34,46 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
-  if (AUTH_EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
+  // OAuth routes
+  if (
+    AUTH_EXCLUDED_ROUTES.some(
+      (route) =>
+        pathname.startsWith(
+          route,
+        ),
+    )
+  ) {
     return NextResponse.next();
   }
-
   const isPublicRoute =
-    PUBLIC_ROUTES.includes(pathname) ||
-    PUBLIC_PREFIXES.some((route) => pathname.startsWith(route));
-
-  const isProtectedRoute = PROTECTED_PREFIXES.some((route) =>
-    pathname.startsWith(route),
-  );
-
-  const token = request.cookies.get("userSession")?.value;
-
-  // Sin token
+    PUBLIC_ROUTES.includes(
+      pathname,
+    ) ||
+    PUBLIC_PREFIXES.some(
+      (route) =>
+        pathname.startsWith(
+          route,
+        ),
+    );
+  const token =
+    request.cookies.get(
+      "userSession",
+    )?.value;
+  // Usuario no autenticado
   if (!token) {
-    if (isPublicRoute) return NextResponse.next();
-    // Rutas protegidas sin token → autenticacion
-    return NextResponse.redirect(new URL("/autenticacion", request.url));
+    if (isPublicRoute) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(
+      new URL(
+        "/autenticacion",
+        request.url,
+      ),
+    );
   }
-
-  // Con token → dejar pasar siempre
-  // La validación de rol admin la hace ProtectedRoute en el cliente
+  // Usuario autenticado
   return NextResponse.next();
 }
-
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico).*)",
