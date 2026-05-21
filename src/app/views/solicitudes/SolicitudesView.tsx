@@ -3,6 +3,7 @@
 import {
   useEffect,
   useState,
+  type SubmitEvent,
 } from "react";
 
 import {
@@ -12,11 +13,9 @@ import {
 
 import { toast } from "sonner";
 
-import { api } from "@/services/api";
-
 import { createTrainingRequest } from "@/services/trainingRequests.service";
 
-import { trainingRequestSchema } from "@/validations/trainingRequest.validations";  
+import { trainingRequestSchema } from "@/validations/trainingRequest.validations";
 
 export default function SolicitudesView() {
 
@@ -50,13 +49,13 @@ export default function SolicitudesView() {
         "categoria",
       ) || "";
 
-    const trainingId =
+    const trainingIdParam =
       searchParams.get(
         "trainingId",
       ) || "";
 
     setTrainingId(
-      trainingId,
+      trainingIdParam,
     );
 
     const pending =
@@ -136,7 +135,7 @@ export default function SolicitudesView() {
 
   const handleSubmit =
     async (
-      e: React.FormEvent<HTMLFormElement>,
+      e: SubmitEvent<HTMLFormElement>,
     ) => {
 
       e.preventDefault();
@@ -163,39 +162,11 @@ export default function SolicitudesView() {
 
         setSubmitting(true);
 
-        try {
+        if (!trainingId) {
 
-          await api(
-            "/auth/profile",
-            {
-              method: "GET",
-            },
+          toast.error(
+            "Capacitación inválida",
           );
-
-        } catch {
-
-          localStorage.setItem(
-            "pendingRequest",
-
-            JSON.stringify({
-              trainingId,
-
-              personas:
-                form.personas,
-
-              objetivo:
-                form.objetivo,
-
-              contexto:
-                form.contexto,
-
-              categoria:
-                form.categoria,
-            }),
-          );
-
-          window.location.href =
-            "/autenticacion";
 
           return;
         }
@@ -219,8 +190,9 @@ export default function SolicitudesView() {
           "Solicitud enviada correctamente",
         );
 
-        window.location.href =
-          "/mis-solicitudes";
+        router.replace(
+          "/mis-solicitudes",
+        );
 
       } catch (error) {
 
@@ -233,6 +205,7 @@ export default function SolicitudesView() {
       } finally {
 
         setSubmitting(false);
+
       }
     };
 

@@ -1,47 +1,8 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { jwtDecode } from "jwt-decode";
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-type DecodedToken = {
-  id: string;
-
-  email: string;
-
-  role: string;
-
-  profileCompleted: boolean;
-};
-
-const PUBLIC_ROUTES = [
-  "/",
-  "/autenticacion",
-  "/contacto",
-];
-
-const PUBLIC_PREFIXES = [
-  "/plataforma",
-  "/capacitaciones",
-  "/casos",
-  "/pago",
-  "/solicitudes",
-];
-
-const AUTH_EXCLUDED_ROUTES = [
-  "/autenticacion/autenticacion-google",
-  "/auth/google/callback",
-];
-
-export function middleware(
-  request: NextRequest,
-) {
-
-  const { pathname } =
-    request.nextUrl;
-
-  // Static files
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -50,109 +11,9 @@ export function middleware(
     return NextResponse.next();
   }
 
-  // OAuth routes
-  if (
-    AUTH_EXCLUDED_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    )
-  ) {
-    return NextResponse.next();
-  }
-
-  const isPublicRoute =
-    PUBLIC_ROUTES.includes(
-      pathname,
-    ) ||
-    PUBLIC_PREFIXES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    );
-
-  const token =
-    request.cookies.get(
-      "userSession",
-    )?.value;
-
-  // User not logged
-  if (!token) {
-
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
-
-    return NextResponse.redirect(
-      new URL(
-        "/autenticacion",
-        request.url,
-      ),
-    );
-  }
-
-  try {
-
-    const user =
-      jwtDecode<DecodedToken>(
-        token,
-      );
-
-    const isCompleteProfilePage =
-      pathname ===
-      "/completar-perfil";
-
-    // User incomplete profile
-    if (
-      !user.profileCompleted
-    ) {
-
-      if (
-        !isCompleteProfilePage
-      ) {
-        return NextResponse.redirect(
-          new URL(
-            "/completar-perfil",
-            request.url,
-          ),
-        );
-      }
-
-      return NextResponse.next();
-    }
-
-    // User already completed profile
-    if (
-      isCompleteProfilePage ||
-      pathname ===
-        "/autenticacion"
-    ) {
-      return NextResponse.redirect(
-        new URL(
-          "/",
-          request.url,
-        ),
-      );
-    }
-
-    return NextResponse.next();
-
-  } catch {
-
-    const response =
-      NextResponse.redirect(
-        new URL(
-          "/autenticacion",
-          request.url,
-        ),
-      );
-
-    response.cookies.delete(
-      "userSession",
-    );
-
-    return response;
-  }
+  return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

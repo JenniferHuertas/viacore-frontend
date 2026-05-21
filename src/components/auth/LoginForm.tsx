@@ -12,6 +12,7 @@ import {
 
 import {
   useSearchParams,
+  useRouter,
 } from "next/navigation";
 
 import {
@@ -50,6 +51,9 @@ export default function LoginForm({
 
   const searchParams =
     useSearchParams();
+
+  const router =
+    useRouter();
 
   const { login } =
     useUser();
@@ -166,8 +170,9 @@ export default function LoginForm({
 
       if (returnTo) {
 
-        window.location.href =
-          returnTo;
+        router.replace(
+          returnTo,
+        );
 
         return;
       }
@@ -185,15 +190,16 @@ export default function LoginForm({
           "pendingRequest",
         );
 
-        window.location.href =
+        router.replace(
           `/solicitudes?categoria=${encodeURIComponent(
             categoria,
-          )}&trainingId=${trainingId}`;
+          )}&trainingId=${trainingId}`,
+        );
 
         return;
       }
 
-      window.location.href = "/";
+      router.replace("/");
 
     } catch (error) {
 

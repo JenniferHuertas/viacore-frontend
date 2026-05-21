@@ -1,35 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
-
 import Input from "@/components/ui/Input";
-
 import Button from "@/components/ui/Button";
-
 import { completeProfile } from "@/services/auth.service";
-
 import { toast } from "sonner";
-
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
 
 export default function CompleteProfileForm() {
-  const [formData, setFormData] =
-    useState({
-      phone: "",
-      country: "",
-      companyName: "",
-      city: "",
-      address: "",
-    });
+  const [formData, setFormData] = useState({
+    phone: "",
+    country: "",
+    companyName: "",
+    city: "",
+    address: "",
+  });
 
-  const [errors, setErrors] =
-    useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [touched, setTouched] =
-    useState<Record<string, boolean>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -43,8 +34,7 @@ export default function CompleteProfileForm() {
 
     setFormData(updatedValues);
 
-    const result =
-      completeProfileSchema.safeParse(updatedValues);
+    const result = completeProfileSchema.safeParse(updatedValues);
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -61,19 +51,16 @@ export default function CompleteProfileForm() {
   };
 
   const handleBlur = (
-    e: React.FocusEvent <HTMLInputElement | HTMLSelectElement>,
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
-  const handleSubmit = async (
-    e: React.SyntheticEvent,
-  ) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    const validation =
-      completeProfileSchema.safeParse(formData);
+    const validation = completeProfileSchema.safeParse(formData);
 
     if (!validation.success) {
       const fieldErrors: Record<string, string> = {};
@@ -127,12 +114,8 @@ export default function CompleteProfileForm() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5"
-    >
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
-
         <div>
           <Input
             name="phone"
@@ -176,9 +159,7 @@ export default function CompleteProfileForm() {
             <p className="text-sm text-red-400">{errors.country}</p>
           )}
 
-          <p className="text-xs text-gray-500">
-            País donde opera la empresa
-          </p>
+          <p className="text-xs text-gray-500">País donde opera la empresa</p>
         </div>
 
         <div>
@@ -191,9 +172,7 @@ export default function CompleteProfileForm() {
             onBlur={handleBlur}
             error={touched.city ? errors.city : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">
-            Ciudad principal
-          </p>
+          <p className="mt-2 text-xs text-gray-500">Ciudad principal</p>
         </div>
 
         <div>
@@ -206,9 +185,7 @@ export default function CompleteProfileForm() {
             onBlur={handleBlur}
             error={touched.address ? errors.address : ""}
           />
-          <p className="mt-2 text-xs text-gray-500">
-            Dirección empresarial
-          </p>
+          <p className="mt-2 text-xs text-gray-500">Dirección empresarial</p>
         </div>
 
         <div className="col-span-2">
@@ -225,13 +202,9 @@ export default function CompleteProfileForm() {
             Nombre de la empresa o institución
           </p>
         </div>
-
       </div>
 
-      <Button
-        type="submit"
-        disabled={loading}
-      >
+      <Button type="submit" disabled={loading}>
         {loading ? "Guardando..." : "Finalizar configuración"}
       </Button>
     </form>

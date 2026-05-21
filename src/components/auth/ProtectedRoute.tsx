@@ -1,14 +1,6 @@
 "use client";
-
-import {
-  useEffect,
-} from "react";
-
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
-
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 
 export default function ProtectedRoute({
@@ -16,57 +8,45 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isHydrated, user, isAuthenticated } = useUser();
 
-  const router =
-    useRouter();
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isAdmin = user?.role?.toLowerCase() === "admin";
 
-  const pathname =
-    usePathname();
-
-  const {
+  console.log("🔍 ProtectedRoute:", {
+    pathname,
     isHydrated,
-    user,
-  } = useUser();
-
-  const isAdminRoute =
-    pathname.startsWith(
-      "/admin",
-    );
-
-  const isAdmin =
-    user?.role
-      ?.toLowerCase() ===
-    "admin";
-
-  useEffect(() => {
-
-    if (!isHydrated) return;
-
-    if (
-      isAdminRoute &&
-      !isAdmin
-    ) {
-
-      router.replace("/");
-    }
-
-  }, [
-    isHydrated,
+    isAuthenticated,
     isAdminRoute,
     isAdmin,
-    router,
-  ]);
+    userRole: user?.role,
+  });
 
-  if (!isHydrated) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isHydrated) return;
 
-  if (
-    isAdminRoute &&
-    !isAdmin
-  ) {
-    return null;
-  }
+    console.log("⚡ useEffect disparado:", {
+      isAdminRoute,
+      isAuthenticated,
+      isAdmin,
+    });
+
+    if (isAdminRoute && !isAuthenticated) {
+      console.log("❌ Redirigiendo: no autenticado");
+      router.replace("/autenticacion");
+    }
+
+    if (isAdminRoute && isAuthenticated && !isAdmin) {
+      console.log("❌ Redirigiendo: no es admin");
+      router.replace("/");
+    }
+  }, [isHydrated, isAdminRoute, isAdmin, isAuthenticated, router]);
+
+  if (!isHydrated) return null;
+  if (isAdminRoute && !isAuthenticated) return null;
+  if (isAdminRoute && isAuthenticated && !isAdmin) return null;
 
   return <>{children}</>;
 }
