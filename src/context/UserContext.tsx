@@ -15,34 +15,28 @@ import { api } from "@/services/api";
 
 export type User = {
   id: string;
-
   email: string;
-
   role: string;
-
   profileCompleted: boolean;
 };
 
 type UserContextType = {
   user: User | null;
-
   isAuthenticated: boolean;
-
   isProfileCompleted: boolean;
-
   isHydrated: boolean;
 
   login: () => Promise<void>;
 
   logout: () => Promise<void>;
 
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<User | null>;
 };
 
 const UserContext =
-  createContext<
-    UserContextType | undefined
-  >(undefined);
+  createContext<UserContextType | undefined>(
+    undefined,
+  );
 
 export function UserProvider({
   children,
@@ -51,31 +45,30 @@ export function UserProvider({
 }) {
 
   const [user, setUser] =
-    useState<User | null>(
-      null,
-    );
+    useState<User | null>(null);
 
-  const [
-    isHydrated,
-    setIsHydrated,
-  ] = useState(false);
+  const [isHydrated, setIsHydrated] =
+    useState(false);
 
   const router = useRouter();
 
   const refreshUser =
-    async () => {
+    async (): Promise<User | null> => {
 
       try {
 
         const profile =
-          await api(
-            "/auth/profile",
-            {
-              method: "GET",
+          await api("/auth/profile", {
+            method: "GET",
+
+            headers: {
+              "Cache-Control": "no-cache",
             },
-          );
+          });
 
         setUser(profile);
+
+        return profile;
 
       } catch (error: any) {
 
@@ -84,9 +77,6 @@ export function UserProvider({
           error,
         );
 
-        // SOLO limpiar usuario
-        // si realmente la sesión expiró
-
         if (
           error?.statusCode === 401
         ) {
@@ -94,6 +84,8 @@ export function UserProvider({
           setUser(null);
 
         }
+
+        return null;
 
       } finally {
 
@@ -138,7 +130,7 @@ export function UserProvider({
         router.push("/");
 
         toast.success(
-          "Sesión cerrada exitosamente",
+          "SesiÃ³n cerrada exitosamente",
         );
       }
     };

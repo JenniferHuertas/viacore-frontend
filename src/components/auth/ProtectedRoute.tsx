@@ -1,14 +1,6 @@
 "use client";
-
-import {
-  useEffect,
-} from "react";
-
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
-
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 
 export default function ProtectedRoute({
@@ -16,77 +8,45 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isHydrated, user, isAuthenticated } = useUser();
 
-  const router =
-    useRouter();
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isAdmin = user?.role?.toLowerCase() === "admin";
 
-  const pathname =
-    usePathname();
-
-  const {
+  console.log("🔍 ProtectedRoute:", {
+    pathname,
     isHydrated,
-    user,
     isAuthenticated,
-  } = useUser();
-
-  const isAdminRoute =
-    pathname.startsWith(
-      "/admin",
-    );
-
-  const isAdmin =
-    user?.role
-      ?.toLowerCase() ===
-    "admin";
-
-  useEffect(() => {
-
-    if (!isHydrated) return;
-
-    // Esperar estado real
-
-    if (
-      isAdminRoute &&
-      isAuthenticated &&
-      !isAdmin
-    ) {
-
-      router.replace("/");
-    }
-
-  }, [
-    isHydrated,
     isAdminRoute,
     isAdmin,
-    isAuthenticated,
-    router,
-  ]);
+    userRole: user?.role,
+  });
 
-  // Esperar hidratación
+  useEffect(() => {
+    if (!isHydrated) return;
 
-  if (!isHydrated) {
-    return null;
-  }
+    console.log("⚡ useEffect disparado:", {
+      isAdminRoute,
+      isAuthenticated,
+      isAdmin,
+    });
 
-  // Si es ruta admin y NO está logueado
-  // evitar render roto
+    if (isAdminRoute && !isAuthenticated) {
+      console.log("❌ Redirigiendo: no autenticado");
+      router.replace("/autenticacion");
+    }
 
-  if (
-    isAdminRoute &&
-    !isAuthenticated
-  ) {
-    return null;
-  }
+    if (isAdminRoute && isAuthenticated && !isAdmin) {
+      console.log("❌ Redirigiendo: no es admin");
+      router.replace("/");
+    }
+  }, [isHydrated, isAdminRoute, isAdmin, isAuthenticated, router]);
 
-  // Si está logueado pero no es admin
-
-  if (
-    isAdminRoute &&
-    isAuthenticated &&
-    !isAdmin
-  ) {
-    return null;
-  }
+  if (!isHydrated) return null;
+  if (isAdminRoute && !isAuthenticated) return null;
+  if (isAdminRoute && isAuthenticated && !isAdmin) return null;
 
   return <>{children}</>;
 }
