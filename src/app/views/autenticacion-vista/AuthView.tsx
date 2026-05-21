@@ -1,361 +1,156 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState, Suspense } from "react";
 
-import {
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import LoginForm from "@/components/auth/LoginForm";
 
-import {
-  useSearchParams,
-  useRouter,
-} from "next/navigation";
+import RegisterForm from "@/components/auth/RegisterForm";
 
-import {
-  useForm,
-} from "react-hook-form";
+export default function AuthView() {
 
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { toast } from "sonner";
-
-import GoogleButton from "@/components/auth/GoogleButton";
-
-import Input from "@/components/ui/Input";
-
-import Button from "@/components/ui/Button";
-
-import { loginUser } from "@/services/auth.service";
-
-import { loginSchema } from "@/validations/login.validations";
-
-import { useUser } from "@/hooks/useUser";
-
-type LoginFormProps = {
-  onSwitchToRegister: () => void;
-};
-
-type LoginFormData = {
-  email: string;
-
-  password: string;
-};
-
-export default function LoginForm({
-  onSwitchToRegister,
-}: LoginFormProps) {
-
-  const searchParams =
-    useSearchParams();
-
-  const router =
-    useRouter();
-
-  const { login } =
-    useUser();
-
-  const [showPassword, setShowPassword] =
+  const [isLogin, setIsLogin] =
     useState(false);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [rememberMe, setRememberMe] =
-    useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: {
-      errors,
-      isValid,
-    },
-  } = useForm<LoginFormData>({
-    resolver:
-      zodResolver(
-        loginSchema,
-      ),
-
-    mode: "onChange",
-  });
-
-  const email =
-    watch("email");
-
-  const password =
-    watch("password");
-
-  const isDisabled =
-    !email ||
-    !password ||
-    !isValid ||
-    loading;
-
-  useEffect(() => {
-
-    const savedEmail =
-      localStorage.getItem(
-        "rememberEmail",
-      );
-
-    if (savedEmail) {
-
-      setValue(
-        "email",
-        savedEmail,
-      );
-
-      setRememberMe(true);
-    }
-
-  }, [setValue]);
-
-  const onSubmit = async (
-    data: LoginFormData,
-  ) => {
-
-    try {
-
-      setLoading(true);
-
-      await loginUser(
-        data,
-      );
-
-      await login();
-
-      try {
-
-        if (rememberMe) {
-
-          localStorage.setItem(
-            "rememberEmail",
-            data.email,
-          );
-
-        } else {
-
-          localStorage.removeItem(
-            "rememberEmail",
-          );
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Error saving remember email",
-          error,
-        );
-      }
-
-      toast.success(
-        "Login exitoso",
-      );
-
-      const returnTo =
-        searchParams.get(
-          "returnTo",
-        );
-
-      const pending =
-        localStorage.getItem(
-          "pendingRequest",
-        );
-
-      if (returnTo) {
-
-        router.replace(
-          returnTo,
-        );
-
-        return;
-      }
-
-      if (pending) {
-
-        const {
-          trainingId,
-          categoria,
-        } = JSON.parse(
-          pending,
-        );
-
-        localStorage.removeItem(
-          "pendingRequest",
-        );
-
-        router.replace(
-          `/solicitudes?categoria=${encodeURIComponent(
-            categoria,
-          )}&trainingId=${trainingId}`,
-        );
-
-        return;
-      }
-
-      router.replace("/");
-
-    } catch (error) {
-
-      console.error(error);
-
-      toast.error(
-        "Credenciales incorrectas",
-      );
-
-    } finally {
-
-      setLoading(false);
-    }
-  };
 
   return (
-    <form
-      onSubmit={handleSubmit(
-        onSubmit,
-      )}
-      noValidate
-      autoComplete="off"
-      className="space-y-5"
-    >
+    <main className="min-h-screen bg-[#070707] px-2 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10 text-white">
 
-      <GoogleButton />
+      <section className="mx-auto flex min-h-212.5 max-w-7xl overflow-hidden rounded-[28px] border border-white/10 bg-[#0b0d0f] shadow-2xl">
 
-      <div className="text-center text-gray-500">
-        o
-      </div>
+        <aside className="hidden w-[32%] flex-col justify-between border-r border-white/10 bg-black/80 p-10 lg:flex">
 
-      <div>
+          <div>
 
-        <Input
-          type="email"
-          placeholder="Correo electrónico"
-          autoComplete="off"
-          {...register("email")}
-        />
+            <img
+              src="/images/logo.png"
+              alt="ViaCore"
+              className="mb-12 w-24"
+            />
 
-        {errors.email
-          ?.message && (
+            <h1 className="mb-4 text-3xl font-semibold tracking-wide">
+              VIACORE
+            </h1>
 
-          <p className="text-red-400 text-xs mt-1">
-            {String(
-              errors.email
-                .message,
-            )}
-          </p>
+            <p className="mb-8 text-sm tracking-widest text-[#C7962D]">
+              CONSULTING & LEARNING
+            </p>
 
-        )}
+            <div className="mb-8 h-0.5 w-12 bg-[#C7962D]" />
 
-      </div>
+            <p className="max-w-xs text-lg leading-relaxed text-gray-300">
+              Impulsamos el desarrollo organizacional mediante soluciones de
+              formación, capacitación y acompañamiento estratégico para
+              empresas.
+            </p>
 
-      <div className="relative">
+          </div>
 
-        <Input
-          type={
-            showPassword
-              ? "text"
-              : "password"
-          }
-          placeholder="Contraseña"
-          autoComplete="new-password"
-          {...register(
-            "password",
-          )}
-        />
+          <div>
 
-        <button
-          type="button"
-          onClick={() =>
-            setShowPassword(
-              !showPassword,
-            )
-          }
-          className="absolute right-4 top-3 text-gray-400 hover:text-[#C7962D] transition cursor-pointer"
-        >
-          {showPassword ? (
-            <EyeOff size={18} />
-          ) : (
-            <Eye size={18} />
-          )}
-        </button>
+            <div className="relative mb-6 overflow-hidden rounded-xl border border-white/10">
 
-        {errors.password
-          ?.message && (
+              <img
+                src="/images/login-registro.png"
+                alt="ViaCore"
+                className="h-72 w-full object-cover"
+              />
 
-          <p className="text-red-400 text-xs mt-1">
-            {String(
-              errors.password
-                .message,
-            )}
-          </p>
+              <div className="absolute inset-0 bg-black/30" />
 
-        )}
+            </div>
 
-      </div>
+            <p className="text-sm text-gray-400">
+              Transformamos el aprendizaje en resultados reales para las
+              organizaciones.
+            </p>
 
-      <div className="flex items-center justify-between text-sm">
+          </div>
 
-        <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
+        </aside>
 
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) =>
-              setRememberMe(
-                e.target.checked,
-              )
-            }
-            className="accent-[#C7962D]"
-          />
+        <section className="flex w-full items-center justify-center p-3 sm:p-6 lg:w-[68%] lg:p-8">
 
-          Recordarme
+          <div className="w-full max-w-5xl rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
 
-        </label>
+            <div className="grid grid-cols-2 border-b border-white/10">
 
-        <span className="text-[#C7962D] cursor-pointer hover:underline">
-          ¿Olvidaste tu contraseña?
-        </span>
+              <button
+                onClick={() =>
+                  setIsLogin(true)
+                }
+                className={`py-6 text-center font-semibold transition cursor-pointer ${
+                  isLogin
+                    ? "border-b-2 border-[#C7962D] text-[#C7962D]"
+                    : "text-gray-400"
+                }`}
+              >
+                Acceder
+              </button>
 
-      </div>
+              <button
+                onClick={() =>
+                  setIsLogin(false)
+                }
+                className={`py-6 text-center font-semibold transition cursor-pointer ${
+                  !isLogin
+                    ? "border-b-2 border-[#C7962D] text-[#C7962D]"
+                    : "text-gray-400"
+                }`}
+              >
+                Crear cuenta empresarial
+              </button>
 
-      <Button
-        type="submit"
-        disabled={
-          isDisabled
-        }
-        className={`w-full transition ${
-          isDisabled
-            ? "opacity-20 cursor-not-allowed"
-            : ""
-        }`}
-      >
-        {loading
-          ? "Ingresando..."
-          : "Acceder"}
-      </Button>
+            </div>
 
-      <p className="text-sm text-gray-400 text-center">
+            <div className="p-5 sm:p-8 lg:p-10">
 
-        ¿No tenés cuenta?{" "}
+              <div className="w-full lg:border-r lg:border-white/10 lg:pr-10">
 
-        <button
-          type="button"
-          onClick={
-            onSwitchToRegister
-          }
-          className="text-[#C7962D] hover:underline cursor-pointer"
-        >
-          Registrate
-        </button>
+                <h2 className="mb-2 text-lg font-semibold">
+                  {isLogin
+                    ? "Accedé a tu espacio"
+                    : "Creá tu cuenta"}
+                </h2>
 
-      </p>
+                <div className="mb-8 mt-4 h-0.5 w-10 bg-[#C7962D]" />
 
-    </form>
+                <Suspense
+                  fallback={
+                    <div className="animate-pulse text-sm text-[#C7962D]">
+                      Cargando formulario...
+                    </div>
+                  }
+                >
+
+                  {isLogin ? (
+
+                    <LoginForm
+                      onSwitchToRegister={() =>
+                        setIsLogin(false)
+                      }
+                    />
+
+                  ) : (
+
+                    <RegisterForm
+                      onSwitchToLogin={() =>
+                        setIsLogin(true)
+                      }
+                    />
+
+                  )}
+
+                </Suspense>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </section>
+
+    </main>
   );
 }
