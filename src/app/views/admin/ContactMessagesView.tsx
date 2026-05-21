@@ -28,6 +28,7 @@ type ContactMessage = {
 };
 
 export default function ContactMessagesView() {
+
   const [messages, setMessages] =
     useState<ContactMessage[]>([]);
 
@@ -36,27 +37,24 @@ export default function ContactMessagesView() {
 
   const fetchMessages =
     async () => {
-      try {
-        const token =
-          localStorage.getItem(
-            "token",
-          );
 
-        if (!token) return;
+      try {
 
         const data =
-          await getContactMessages(
-            token,
-          );
+          await getContactMessages();
 
         setMessages(data);
+
       } catch (error) {
+
         console.error(error);
 
         toast.error(
           "Error obteniendo mensajes",
         );
+
       } finally {
+
         setLoading(false);
       }
     };
@@ -66,11 +64,14 @@ export default function ContactMessagesView() {
   }, []);
 
   if (loading) {
+
     return (
       <AdminLayout>
+
         <div className="text-gray-400">
           Cargando mensajes...
         </div>
+
       </AdminLayout>
     );
   }
@@ -81,6 +82,7 @@ export default function ContactMessagesView() {
       <div className="space-y-6">
 
         <div>
+
           <h1 className="text-2xl font-semibold text-white">
             Contacto
           </h1>
@@ -90,6 +92,7 @@ export default function ContactMessagesView() {
           <p className="text-gray-400 mt-2">
             Consultas recibidas desde la plataforma.
           </p>
+
         </div>
 
         <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
@@ -128,6 +131,7 @@ export default function ContactMessagesView() {
 
               {messages.map(
                 (message) => (
+
                   <tr
                     key={message.id}
                     className="border-b border-white/5"
@@ -142,8 +146,10 @@ export default function ContactMessagesView() {
                     </td>
 
                     <td className="p-4 text-gray-400">
-                      {message.empresa ||
-                        "-"}
+                      {
+                        message.empresa ||
+                        "-"
+                      }
                     </td>
 
                     <td className="p-4 max-w-sm text-gray-300">

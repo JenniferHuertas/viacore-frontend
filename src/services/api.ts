@@ -11,6 +11,8 @@ export const api = async (
     {
       ...options,
 
+      credentials: "include",
+
       headers: {
         ...(options.body instanceof
         FormData
@@ -25,10 +27,17 @@ export const api = async (
     },
   );
 
-  const data =
-    await res.json();
+  const text =
+    await res.text();
 
-  if (!res.ok) throw data;
+  const data =
+    text
+      ? JSON.parse(text)
+      : null;
+
+  if (!res.ok) {
+    throw data;
+  }
 
   return data;
 };

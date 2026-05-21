@@ -92,8 +92,8 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         password: result.data.password,
       });
 
-      login(loginData.access_token);
       document.cookie = `userSession=${loginData.access_token}; path=/; max-age=604800; SameSite=Lax`;
+      await login();
       const returnTo = searchParams.get("returnTo");
       const pending = localStorage.getItem("pendingRequest");
 
