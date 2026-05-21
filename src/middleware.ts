@@ -1,13 +1,6 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = [
-  "/",
-  "/autenticacion",
-  "/contacto",
-];
+const PUBLIC_ROUTES = ["/", "/autenticacion", "/contacto"];
 
 const PUBLIC_PREFIXES = [
   "/plataforma",
@@ -22,12 +15,8 @@ const AUTH_EXCLUDED_ROUTES = [
   "/auth/google/callback",
 ];
 
-export function middleware(
-  request: NextRequest,
-) {
-
-  const { pathname } =
-    request.nextUrl;
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
   // Static files
 
@@ -41,14 +30,7 @@ export function middleware(
 
   // OAuth routes
 
-  if (
-    AUTH_EXCLUDED_ROUTES.some(
-      (route) =>
-        pathname.startsWith(
-          route,
-        ),
-    )
-  ) {
+  if (AUTH_EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
@@ -58,11 +40,11 @@ export function middleware(
     "/admin",
     "/perfil",
     "/solicitudes",
-    "/agenda"
+    "/agenda",
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   const publicRoutes = [
@@ -75,30 +57,19 @@ export function middleware(
   ];
 
   const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   const token = request.cookies.get("userSession")?.value;
 
-  const token =
-    request.cookies.get(
-      "userSession",
-    )?.value;
-
   // Usuario no autenticado
 
   if (!token) {
-
     if (isPublicRoute) {
       return NextResponse.next();
     }
 
-    return NextResponse.redirect(
-      new URL(
-        "/autenticacion",
-        request.url,
-      ),
-    );
+    return NextResponse.redirect(new URL("/autenticacion", request.url));
   }
 
   // Si hay cookie, dejar pasar.
