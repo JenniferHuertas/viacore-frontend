@@ -87,6 +87,14 @@ export default function Sidebar() {
               Contacto
             </Link>
 
+            
+            <Link 
+              href="/admin/payments" 
+              className={linkClass("/admin/payments")}
+            >
+              Pagos
+            </Link>
+
           </nav>
 
         </div>
