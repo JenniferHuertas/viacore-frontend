@@ -36,7 +36,7 @@ import { loginSchema } from "@/validations/login.validations";
 import { useUser } from "@/hooks/useUser";
 
 type LoginFormProps = {
-  onSwitchToRegister?: () => void;
+  onSwitchToRegister: () => void;
 };
 
 type LoginFormData = {
