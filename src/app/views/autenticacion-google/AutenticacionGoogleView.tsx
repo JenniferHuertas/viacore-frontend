@@ -49,7 +49,7 @@ export default function AutenticacionGoogleView() {
         }
 
         toast.success(
-          "Autenticación con Google exitosa",
+          "Login con Google exitoso",
         );
 
         if (

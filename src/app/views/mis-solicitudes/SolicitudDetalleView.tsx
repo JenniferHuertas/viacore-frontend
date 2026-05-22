@@ -408,7 +408,7 @@ export default function SolicitudDetalleView({
         )}
 
         {solicitud.status ===
-          "scheduled" && (
+          "awaiting_payment" && (
 
           <div className="mt-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-[#C7962D]/20 bg-[#C7962D]/10 rounded-xl p-5">
 
