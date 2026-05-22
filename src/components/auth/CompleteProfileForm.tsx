@@ -63,26 +63,7 @@ export default function CompleteProfileForm() {
     const validation = completeProfileSchema.safeParse(formData);
 
     if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
-
-      validation.error.issues.forEach((issue) => {
-        const field = issue.path[0] as string;
-        fieldErrors[field] = issue.message;
-      });
-
-      setErrors(fieldErrors);
-
-      // Marcar todos como touched para mostrar todos los errores
-      setTouched({
-        phone: true,
-        country: true,
-        companyName: true,
-        city: true,
-        address: true,
-      });
-
-      toast.error("Revisá los campos");
-
+      toast.warning("Debes completar todos los campos");
       return;
     }
 
