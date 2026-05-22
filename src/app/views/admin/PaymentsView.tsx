@@ -26,6 +26,38 @@ type Payment = {
   createdAt: string;
 };
 
+const paymentStatusMap: Record<
+  string,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  approved: {
+    label: "Aprobado",
+    className:
+      "bg-green-500/10 text-green-400",
+  },
+
+  paid: {
+    label: "Pagado",
+    className:
+      "bg-blue-500/10 text-blue-400",
+  },
+
+  pending: {
+    label: "Pendiente",
+    className:
+      "bg-yellow-500/10 text-yellow-400",
+  },
+
+  rejected: {
+    label: "Rechazado",
+    className:
+      "bg-red-500/10 text-red-400",
+  },
+};
+
 export default function PaymentsView() {
   const today =
     new Date()
@@ -168,7 +200,7 @@ export default function PaymentsView() {
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/5">
-          <table className="w-full text-sm min-w-225">
+          <table className="w-full text-sm min-w-[900px]">
             <thead className="border-b border-white/10 text-gray-400">
               <tr>
                 <th className="p-4 text-left">
@@ -195,70 +227,72 @@ export default function PaymentsView() {
 
             <tbody>
               {payments.map(
-                (payment) => (
-                  <tr
-                    key={
-                      payment.id
-                    }
-                    className="border-b border-white/5"
-                  >
-                    <td className="p-4">
-                      <div>
-                        {payment
-                          .user
-                          ?.name ??
-                          "—"}
-                      </div>
+                (payment) => {
+                  const statusData =
+                    paymentStatusMap[
+                      payment.status
+                    ] ?? {
+                      label:
+                        payment.status,
+                      className:
+                        "bg-white/10 text-gray-400",
+                    };
 
-                      <div className="text-gray-400 text-xs">
-                        {
-                          payment
+                  return (
+                    <tr
+                      key={
+                        payment.id
+                      }
+                      className="border-b border-white/5"
+                    >
+                      <td className="p-4">
+                        <div>
+                          {payment
                             .user
-                            ?.email
-                        }
-                      </div>
-                    </td>
+                            ?.name ??
+                            "—"}
+                        </div>
 
-                    <td className="p-4 text-gray-300">
-                      $
-                      {
-                        payment.amount
-                      }
-                    </td>
+                        <div className="text-gray-400 text-xs">
+                          {
+                            payment
+                              .user
+                              ?.email
+                          }
+                        </div>
+                      </td>
 
-                    <td className="p-4 text-gray-300 capitalize">
-                      {
-                        payment.method
-                      }
-                    </td>
-
-                    <td className="p-4">
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          payment.status ===
-                            "Aprovado" ||
-                          payment.status ===
-                            "Pagado"
-                            ? "bg-green-500/10 text-green-400"
-                            : payment.status ===
-                                "Pendiente"
-                              ? "bg-yellow-500/10 text-yellow-400"
-                              : "bg-red-500/10 text-red-400"
-                        }`}
-                      >
+                      <td className="p-4 text-gray-300">
+                        $
                         {
-                          payment.status
+                          payment.amount
                         }
-                      </span>
-                    </td>
+                      </td>
 
-                    <td className="p-4 text-gray-400">
-                      {new Date(
-                        payment.createdAt,
-                      ).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ),
+                      <td className="p-4 text-gray-300 capitalize">
+                        {
+                          payment.method
+                        }
+                      </td>
+
+                      <td className="p-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${statusData.className}`}
+                        >
+                          {
+                            statusData.label
+                          }
+                        </span>
+                      </td>
+
+                      <td className="p-4 text-gray-400">
+                        {new Date(
+                          payment.createdAt,
+                        ).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                },
               )}
             </tbody>
           </table>
