@@ -5,10 +5,6 @@ import { DecodedToken } from "./context/UserContext";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ============================
-  // 🚀 INICIO CAMBIO IMPORTANTE
-  // ============================
-  // Dejar pasar assets, API y archivos estáticos
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
