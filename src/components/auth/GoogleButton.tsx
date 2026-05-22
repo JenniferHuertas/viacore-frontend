@@ -1,12 +1,16 @@
 "use client";
 
-export default function GoogleAuthButton() {
+export default function GoogleButton() {
+
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+
+    window.location.href =
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
     <div className="flex justify-center items-center">
+
       <button
         type="button"
         onClick={handleGoogleLogin}
@@ -32,14 +36,19 @@ export default function GoogleAuthButton() {
           hover:shadow-[0_0_20px_rgba(199,150,45,0.15)]
         "
       >
+
         <img
           src="https://www.svgrepo.com/show/475656/google-color.svg"
           alt="Google"
           className="w-5 h-5"
         />
 
-        <span>Continuar con Google</span>
+        <span>
+          Continuar con Google
+        </span>
+
       </button>
+
     </div>
   );
 }

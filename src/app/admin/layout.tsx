@@ -1,3 +1,4 @@
+"use client";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function AdminLayout({
@@ -11,4 +12,3 @@ export default function AdminLayout({
     </ProtectedRoute>
   );
 }
-

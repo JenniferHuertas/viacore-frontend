@@ -146,17 +146,9 @@ export default function EditarSolicitudView({
 
         try {
 
-          const token =
-            localStorage.getItem(
-              "token",
-            );
-
-          if (!token) return;
-
           const data =
             await getTrainingRequestById(
               id,
-              token,
             );
 
           setSolicitud(data);
@@ -248,21 +240,16 @@ export default function EditarSolicitudView({
     try {
 
       setSaving(true);
-      const token = localStorage.getItem(
-          "token",
-        );
-
-      if (!token) {
-        toast.warning(
-          "Debes iniciar sesión",
-        );
-        return;
-      }
 
       await editTrainingRequest(
         id,
-        {participantsCount, objectives, context},
-        token,
+        {
+          participantsCount,
+
+          objectives,
+
+          context,
+        },
       );
 
       toast.success(

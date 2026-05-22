@@ -41,7 +41,7 @@ export default function AgendaView({
         e.target.value,
     };
 
-    setForm(updatedForm)
+    setForm(updatedForm);
 
     const resultado = meetingSchema.safeParse(updatedForm);
 
@@ -56,34 +56,17 @@ export default function AgendaView({
     async (e: any) => {
       e.preventDefault();
 
+      if (!user?.id) return;
+
       try {
         setLoading(true);
 
-        const token =
-          localStorage.getItem(
-            "token",
-          );
-
-        if (
-          !token ||
-          !user?.id
-        )
-          return;
-
-        await createMeeting(
-          {
-            date: form.fecha,
-
-            time: form.horario,
-
-            targetUserId:
-              user.id,
-
-            trainingRequestId:
-              id,
-          },
-          token,
-        );
+        await createMeeting({
+          date: form.fecha,
+          time: form.horario,
+          targetUserId: user.id,
+          trainingRequestId: id,
+        });
 
         router.push(
           `/mis-solicitudes/${id}`,
@@ -114,9 +97,7 @@ export default function AgendaView({
         </p>
 
         <form
-          onSubmit={
-            handleSubmit
-          }
+          onSubmit={handleSubmit}
           className="space-y-6"
         >
 
@@ -129,9 +110,7 @@ export default function AgendaView({
             <input
               type="date"
               name="fecha"
-              onChange={
-                handleChange
-              }
+              onChange={handleChange}
               required
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
             />
@@ -141,6 +120,7 @@ export default function AgendaView({
                 {errors.fecha._errors[0]}
               </p>
             )}
+
           </div>
 
           <div>
@@ -154,9 +134,7 @@ export default function AgendaView({
               name="horario"
               min="09:00"
               max="17:00"
-              onChange={
-                handleChange
-              }
+              onChange={handleChange}
               required
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
             />
@@ -166,13 +144,12 @@ export default function AgendaView({
                 {errors.horario._errors[0]}
               </p>
             )}
+
           </div>
 
           <button
             type="submit"
-            disabled={
-              loading
-            }
+            disabled={loading}
             className="w-full py-4 bg-[#C7962D] text-black rounded-md font-semibold hover:opacity-90 transition disabled:opacity-50"
           >
             {loading
