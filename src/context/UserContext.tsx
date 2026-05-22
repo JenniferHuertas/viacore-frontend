@@ -130,7 +130,7 @@ export function UserProvider({
         router.push("/");
 
         toast.success(
-          "Nos vemos perro malpario",
+          "Sesión cerrada exitosamente",
         );
       }
     };
