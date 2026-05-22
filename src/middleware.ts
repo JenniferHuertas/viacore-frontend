@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
-import { DecodedToken } from "./context/UserContext";
+
+interface DecodedToken {
+  email: string;
+  role: string;
+  profileCompleted: boolean;
+  exp: number
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -33,19 +39,6 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  const publicRoutes = [
-    "/",
-    "/autenticacion",
-    "/contacto",
-    "/plataforma",
-    "/capacitaciones",
-    "/casos",
-  ];
-
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
   const token = request.cookies.get("userSession")?.value;
 
   if (!token) {
@@ -58,6 +51,18 @@ export function middleware(request: NextRequest) {
 
   try {
     const user = jwtDecode<DecodedToken>(token);
+
+    const currentTime = Date.now() / 1000;
+
+       if (user.exp < currentTime) {
+      const response = NextResponse.redirect(
+        new URL("/autenticacion", request.url)
+      );
+
+      response.cookies.delete("userSession");
+
+      return response;
+    }
 
     const isCompleteProfilePage = pathname === "/completar-perfil";
 
@@ -76,6 +81,12 @@ export function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch {
-    return NextResponse.redirect(new URL("/autenticacion", request.url));
-  }
+     const response = NextResponse.redirect(
+      new URL("/autenticacion", request.url)
+    );
+
+   response.cookies.delete("userSession");
+
+    return response;
+ }
 }
