@@ -1,3 +1,5 @@
+import { api } from "./api";
+
 export type PaymentsFilters = {
   startDate: string;
   endDate: string;
@@ -6,7 +8,6 @@ export type PaymentsFilters = {
 };
 
 export const getPayments = async (
-  token: string,
   filters: PaymentsFilters,
 ) => {
   const params = new URLSearchParams({
@@ -20,18 +21,7 @@ export const getPayments = async (
     params.append("status", filters.status);
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/payments?${params.toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
+  return await api(
+    `/payments?${params.toString()}`
   );
-
-  if (!response.ok) {
-    throw new Error("Error obteniendo pagos");
-  }
-
-  return response.json();
 };
