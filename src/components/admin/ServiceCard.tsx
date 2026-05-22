@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import { toast } from "sonner";
+
 import AdminLayout from "@/components/admin/AdminLayout";
 
 import Link from "next/link";
@@ -33,6 +35,7 @@ type Training = {
 };
 
 export default function ServicesView() {
+
   const [services, setServices] =
     useState<Training[]>([]);
 
@@ -41,27 +44,40 @@ export default function ServicesView() {
 
   const fetchServices =
     async () => {
+
       try {
+
         const data =
           await getAllTrainings();
 
         setServices(data);
+
       } catch (error) {
+
         console.error(
           "Error obteniendo servicios",
           error,
         );
+
+        toast.error(
+          "Error cargando servicios",
+        );
+
       } finally {
+
         setLoading(false);
       }
     };
 
   useEffect(() => {
+
     fetchServices();
+
   }, []);
 
   const handleDelete =
     async (id: string) => {
+
       const confirmed =
         window.confirm(
           "¿Eliminar este servicio?",
@@ -70,23 +86,8 @@ export default function ServicesView() {
       if (!confirmed) return;
 
       try {
-        const token =
-          localStorage.getItem(
-            "token",
-          );
 
-        if (!token) {
-          alert(
-            "Debes iniciar sesión",
-          );
-
-          return;
-        }
-
-        await deleteTraining(
-          id,
-          token,
-        );
+        await deleteTraining(id);
 
         setServices((prev) =>
           prev.filter(
@@ -95,16 +96,18 @@ export default function ServicesView() {
           ),
         );
 
-        alert(
+        toast.success(
           "Servicio eliminado correctamente",
         );
+
       } catch (error) {
+
         console.error(
           "Error eliminando servicio",
           error,
         );
 
-        alert(
+        toast.error(
           "Error eliminando servicio",
         );
       }
@@ -112,9 +115,13 @@ export default function ServicesView() {
 
   return (
     <AdminLayout>
+
       <div className="space-y-6">
+
         <div className="flex items-center justify-between">
+
           <div>
+
             <h1 className="text-3xl font-semibold text-white">
               Servicios
             </h1>
@@ -124,22 +131,31 @@ export default function ServicesView() {
             <p className="text-gray-400 mt-3">
               Gestión de capacitaciones disponibles.
             </p>
+
           </div>
 
           <Link href="/admin/services/create">
+
             <Button>
               + Crear servicio
             </Button>
+
           </Link>
+
         </div>
 
         {loading ? (
+
           <div className="border border-white/10 rounded-2xl bg-[#0B0D0F] p-10 text-gray-400">
             Cargando servicios...
           </div>
+
         ) : services.length === 0 ? (
+
           <div className="border border-white/10 rounded-2xl bg-[#0B0D0F] p-10">
+
             <div className="flex flex-col items-center justify-center py-12 text-center">
+
               <h3 className="text-xl font-medium text-white">
                 No hay servicios cargados
               </h3>
@@ -147,16 +163,24 @@ export default function ServicesView() {
               <p className="text-sm text-gray-400 mt-2">
                 Creá el primer servicio para comenzar a gestionar capacitaciones.
               </p>
+
             </div>
+
           </div>
+
         ) : (
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
             {services.map((service) => (
+
               <div
                 key={service.id}
                 className="rounded-2xl overflow-hidden border border-white/10 bg-[#0B0D0F] hover:border-[#C7962D]/40 transition flex flex-col"
               >
+
                 <div className="relative h-52 w-full">
+
                   <Image
                     src={
                       service.fileResource
@@ -168,19 +192,25 @@ export default function ServicesView() {
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+
                 </div>
 
                 <div className="p-5 space-y-4 flex flex-col flex-1">
+
                   <div>
+
                     {service.category && (
+
                       <span className="text-xs uppercase tracking-wider text-[#C7962D]">
                         {service.category}
                       </span>
+
                     )}
 
                     <h2 className="text-xl font-semibold text-white mt-2">
                       {service.title}
                     </h2>
+
                   </div>
 
                   <p className="text-sm text-gray-400 leading-relaxed flex-1">
@@ -188,6 +218,7 @@ export default function ServicesView() {
                   </p>
 
                   <div className="flex items-center justify-end pt-2">
+
                     <button
                       onClick={() =>
                         handleDelete(
@@ -198,13 +229,20 @@ export default function ServicesView() {
                     >
                       Eliminar
                     </button>
+
                   </div>
+
                 </div>
+
               </div>
             ))}
+
           </div>
+
         )}
+
       </div>
+
     </AdminLayout>
   );
 }

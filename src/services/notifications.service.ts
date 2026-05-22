@@ -1,111 +1,66 @@
 import { api } from "./api";
 
-export const getNotificationsByUser = (
-  userId: string,
-) => {
-  const token =
-    localStorage.getItem("token");
+export const getNotificationsByUser =
+  (
+    userId: string,
+  ) => {
 
-  return api(
-    `/notifications/user/${userId}`,
-    {
-      method: "GET",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
+    return api(
+      `/notifications/user/${userId}`,
+      {
+        method: "GET",
       },
-    },
-  );
-};
+    );
+  };
 
-export const getUnreadNotifications = (
-  userId: string,
-) => {
-  const token =
-    localStorage.getItem("token");
+export const getUnreadNotifications =
+  (
+    userId: string,
+  ) => {
 
-  return api(
-    `/notifications/user/${userId}/unread`,
-    {
-      method: "GET",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
+    return api(
+      `/notifications/user/${userId}/unread`,
+      {
+        method: "GET",
       },
-    },
-  );
-};
+    );
+  };
 
-export const getUnreadCount = (
-  userId: string,
-) => {
-  const token =
-    localStorage.getItem("token");
+export const getUnreadCount =
+  (
+    userId: string,
+  ) => {
 
-  return api(
-    `/notifications/user/${userId}/count`,
-    {
-      method: "GET",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
+    return api(
+      `/notifications/user/${userId}/count`,
+      {
+        method: "GET",
       },
-    },
-  );
-};
+    );
+  };
 
-export const markAsRead = (
-  notificationId: string,
-) => {
-  const token =
-    localStorage.getItem("token");
+export const markAsRead =
+  (
+    notificationId: string,
+  ) => {
 
-  return api(
-    `/notifications/${notificationId}/read`,
-    {
-      method: "PATCH",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
+    return api(
+      `/notifications/${notificationId}/read`,
+      {
+        method: "PATCH",
       },
-    },
-  );
-};
+    );
+  };
 
-export const markAllAsRead = (
-  userId: string,
-) => {
-  const token =
-    localStorage.getItem("token");
+export const markAllAsRead =
+  (
+    userId: string,
+  ) => {
 
-  return api(
-    `/notifications/user/${userId}/read-all`,
-    {
-      method: "PATCH",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        Authorization:
-          `Bearer ${token}`,
+    return api(
+      `/notifications/user/${userId}/read-all`,
+      {
+        method: "PATCH",
       },
-    },
-  );
-};
+    );
+  };

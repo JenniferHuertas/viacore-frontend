@@ -1,119 +1,39 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-
-import { useUser } from "@/hooks/useUser";
-
-import { jwtDecode } from "jwt-decode";
-
+import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-type DecodedToken = {
-  id: string;
-
-  email: string;
-
-  role: string;
-
-  profileCompleted: boolean;
-};
+import { useUserContext } from "@/context/UserContext";
 
 export default function AutenticacionGoogleView() {
   const router = useRouter();
-
-  const searchParams =
-    useSearchParams();
-
-  const { login } = useUser();
-
-  const hasLogged =
-    useRef(false);
-
-  const [mounted, setMounted] =
-    useState(false);
+  const { refreshUser } = useUserContext();
+  const executed = useRef(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (executed.current) return;
+    executed.current = true;
 
-  useEffect(() => {
-    if (!mounted) return;
+    const init = async () => {
+      const profile = await refreshUser();
 
-    if (hasLogged.current) return;
-
-    try {
-      const token =
-        searchParams.get("token");
-
-      const isLogin =
-        searchParams.get("login");
-
-      if (!token) {
-        toast.error(
-          "Error al autenticar con Google",
-        );
-
-        router.push(
-          "/autenticacion",
-        );
-
+      if (!profile) {
+        router.replace("/autenticacion");
         return;
       }
 
-      hasLogged.current = true;
+      toast.success("Autenticación con Google exitosa");
 
-      const decoded =
-        jwtDecode<DecodedToken>(token);
-
-      login(token);
-
-      if (isLogin === "true") {
-        toast.success(
-          "Sesión iniciada con Google",
-        );
-      } else {
-        toast.success(
-          "Cuenta creada con Google",
-        );
-      }
-
-      if (
-        !decoded.profileCompleted
-      ) {
-        router.push(
-          "/completar-perfil",
-        );
-
+      if (!profile.profileCompleted) {
+        router.replace("/completar-perfil");
         return;
       }
 
-      router.push("/");
-    } catch {
-      toast.error(
-        "Error al autenticar con Google",
-      );
+      router.replace("/");
+    };
 
-      router.push(
-        "/autenticacion",
-      );
-    }
-  }, [
-    mounted,
-    searchParams,
-    login,
-    router,
-  ]);
-
-  if (!mounted) return null;
+    init();
+  }, [router, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white">

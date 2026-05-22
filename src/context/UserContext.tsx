@@ -7,176 +7,152 @@ import {
   useState,
 } from "react";
 
-import { jwtDecode } from "jwt-decode";
-
 import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
-export type DecodedToken = {
+import { api } from "@/services/api";
+
+export type User = {
   id: string;
-
   email: string;
-
   role: string;
-
   profileCompleted: boolean;
 };
 
 type UserContextType = {
-  token: string | null;
-
-  user: DecodedToken | null;
-
+  user: User | null;
   isAuthenticated: boolean;
-
   isProfileCompleted: boolean;
-
   isHydrated: boolean;
 
-  login: (token: string) => void;
+  login: () => Promise<void>;
 
-  logout: () => void;
+  logout: () => Promise<void>;
+
+  refreshUser: () => Promise<User | null>;
 };
 
 const UserContext =
-  createContext<
-    UserContextType | undefined
-  >(undefined);
+  createContext<UserContextType | undefined>(
+    undefined,
+  );
 
 export function UserProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [token, setToken] =
-    useState<string | null>(null);
 
   const [user, setUser] =
-    useState<DecodedToken | null>(
-      null,
-    );
+    useState<User | null>(null);
+
+  const [isHydrated, setIsHydrated] =
+    useState(false);
 
   const router = useRouter();
 
-  const [
-    isHydrated,
-    setIsHydrated,
-  ] = useState(false);
+  const refreshUser =
+    async (): Promise<User | null> => {
 
-  useEffect(() => {
-    const storedToken =
-      localStorage.getItem("token");
+      try {
 
-    if (!storedToken) {
-      setIsHydrated(true);
+        const profile =
+          await api("/auth/profile", {
+            method: "GET",
 
-      return;
-    }
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
 
-    try {
-      if (
-        storedToken.split(".")
-          .length !== 3
-      ) {
-        throw new Error(
-          "Token inválido",
-        );
-      }
+        setUser(profile);
 
-      setToken(storedToken);
+        return profile;
 
-      const decoded =
-        jwtDecode<DecodedToken>(
-          storedToken,
-        );
+} catch (error: any) {
 
-      setUser(decoded);
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(decoded),
-      );
-    } catch (err) {
-      localStorage.removeItem(
-        "token",
-      );
-
-      localStorage.removeItem(
-        "user",
-      );
-
-      setToken(null);
-
-      setUser(null);
-    }
-
-    setIsHydrated(true);
-  }, []);
-
-  const login = (
-    newToken: string,
-  ) => {
-    try {
-      localStorage.setItem(
-        "token",
-        newToken,
-      );
-
-      document.cookie = `userSession=${newToken}; path=/; max-age=86400`;
-
-    setToken(newToken);
-
-      const decoded =
-        jwtDecode<DecodedToken>(
-          newToken,
-        );
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(decoded),
-      );
-
-      setUser(decoded);
-    } catch (error) {
-      toast.error(
-        "Token inválido",
-      );
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem(
-      "token",
-    );
-
-    localStorage.removeItem(
-      "user",
-    );
-
-    document.cookie =
-      "userSession=; path=/; max-age=0";
-
-    setToken(null);
+  if (
+    error?.statusCode === 401
+  ) {
 
     setUser(null);
 
-    router.push("/");
+    return null;
+  }
 
-    toast.success(
-      "Sesión cerrada exitosamente",
-    );
-  };
+  console.error(
+    "ERROR REFRESH USER",
+    {
+      statusCode:
+        error?.statusCode,
+
+      message:
+        error?.message,
+
+      error,
+    },
+  );
+
+  return null;
+}
+
+       finally {
+
+        setIsHydrated(true);
+
+      }
+    };
+
+  useEffect(() => {
+
+    refreshUser();
+
+  }, []);
+
+  const login =
+    async () => {
+
+      await refreshUser();
+
+    };
+
+  const logout =
+    async () => {
+
+      try {
+
+        await api(
+          "/auth/logout",
+          {
+            method: "POST",
+          },
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+      } finally {
+
+        setUser(null);
+
+        router.push("/");
+
+        toast.success(
+          "Sesión cerrada exitosamente",
+        );
+      }
+    };
 
   return (
     <UserContext.Provider
       value={{
-        token,
 
         user,
 
         isAuthenticated:
-          !!token,
+          !!user,
 
         isProfileCompleted:
           !!user?.profileCompleted,
@@ -186,6 +162,9 @@ export function UserProvider({
         login,
 
         logout,
+
+        refreshUser,
+
       }}
     >
       {children}
@@ -194,10 +173,14 @@ export function UserProvider({
 }
 
 export function useUserContext() {
+
   const context =
-    useContext(UserContext);
+    useContext(
+      UserContext,
+    );
 
   if (!context) {
+
     throw new Error(
       "useUserContext debe usarse dentro de UserProvider",
     );

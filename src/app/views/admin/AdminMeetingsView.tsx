@@ -41,6 +41,7 @@ type Meeting = {
 };
 
 export default function AdminMeetingsView() {
+
   const [meetings, setMeetings] =
     useState<Meeting[]>([]);
 
@@ -49,47 +50,38 @@ export default function AdminMeetingsView() {
 
   const fetchMeetings =
     async () => {
-      try {
-        const token =
-          localStorage.getItem(
-            "token",
-          );
 
-        if (!token) return;
+      try {
 
         const data =
-          await getMeetings(
-            token,
-          );
+          await getMeetings();
 
         setMeetings(data);
+
       } catch (error) {
+
         console.error(
           "Error obteniendo reuniones",
           error,
         );
+
       } finally {
+
         setLoading(false);
       }
     };
 
   const handleCancel =
     async (id: string) => {
+
       try {
-        const token =
-          localStorage.getItem(
-            "token",
-          );
 
-        if (!token) return;
-
-        await cancelMeeting(
-          id,
-          token,
-        );
+        await cancelMeeting(id);
 
         fetchMeetings();
+
       } catch (error) {
+
         console.error(
           "Error cancelando reunión",
           error,
@@ -104,7 +96,9 @@ export default function AdminMeetingsView() {
   const getStatusStyles = (
     status: string,
   ) => {
+
     switch (status) {
+
       case "PENDING":
         return "bg-yellow-500/10 text-yellow-400";
 
@@ -125,7 +119,9 @@ export default function AdminMeetingsView() {
   const getStatusLabel = (
     status: string,
   ) => {
+
     switch (status) {
+
       case "PENDING":
         return "Pendiente";
 
@@ -144,6 +140,7 @@ export default function AdminMeetingsView() {
   };
 
   if (loading) {
+
     return (
       <div className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6 text-gray-400">
         Cargando reuniones...
@@ -180,6 +177,7 @@ export default function AdminMeetingsView() {
 
           {meetings.map(
             (meeting) => (
+
               <div
                 key={meeting.id}
                 className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6"
@@ -228,6 +226,7 @@ export default function AdminMeetingsView() {
                       .trainingRequest
                       ?.training
                       ?.title && (
+
                       <div>
 
                         <p className="text-sm text-gray-400">
@@ -276,6 +275,7 @@ export default function AdminMeetingsView() {
 
                     {meeting.status !==
                       "CANCELLED" && (
+
                       <button
                         onClick={() =>
                           handleCancel(
@@ -297,7 +297,6 @@ export default function AdminMeetingsView() {
           )}
 
         </div>
-
       )}
 
     </div>
