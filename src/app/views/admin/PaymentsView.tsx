@@ -236,12 +236,12 @@ export default function PaymentsView() {
                       <span
                         className={`text-xs px-2 py-1 rounded ${
                           payment.status ===
-                            "approved" ||
+                            "Aprovado" ||
                           payment.status ===
-                            "paid"
+                            "Pagado"
                             ? "bg-green-500/10 text-green-400"
                             : payment.status ===
-                                "pending"
+                                "Pendiente"
                               ? "bg-yellow-500/10 text-yellow-400"
                               : "bg-red-500/10 text-red-400"
                         }`}
