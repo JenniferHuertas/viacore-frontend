@@ -211,10 +211,6 @@ export default function RegisterForm({
             result.data.password,
         });
 
-        // NO usar document.cookie
-        // El backend ya maneja
-        // la cookie httpOnly
-
         await login();
 
         const returnTo =
