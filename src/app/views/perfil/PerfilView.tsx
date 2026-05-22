@@ -50,7 +50,6 @@ export default function PerfilView() {
     reset,
     formState: {
       errors,
-      isValid,
     },
   } = useForm<ProfileFormData>({
     resolver:
@@ -195,12 +194,17 @@ export default function PerfilView() {
 
           </div>
 
-          <form
-            onSubmit={handleSubmit(
-              onSubmit,
-            )}
-            className="space-y-10"
-          >
+        <form
+  onSubmit={handleSubmit(
+    onSubmit,
+    () => {
+      toast.warning(
+        "Debes completar todos los campos",
+      );
+    },
+  )}
+  className="space-y-10"
+>
 
             <div>
 
@@ -411,12 +415,7 @@ export default function PerfilView() {
 
               <Button
                 type="submit"
-                disabled={
-                  !isValid ||
-                  saving
-                }
                 className={`min-w-55 ${
-                  !isValid ||
                   saving
                     ? "opacity-40 cursor-not-allowed"
                     : ""

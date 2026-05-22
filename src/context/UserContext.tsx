@@ -70,24 +70,34 @@ export function UserProvider({
 
         return profile;
 
-      } catch (error: any) {
+} catch (error: any) {
 
-        console.error(
-          "ERROR REFRESH USER",
-          error,
-        );
+  if (
+    error?.statusCode === 401
+  ) {
 
-        if (
-          error?.statusCode === 401
-        ) {
+    setUser(null);
 
-          setUser(null);
+    return null;
+  }
 
-        }
+  console.error(
+    "ERROR REFRESH USER",
+    {
+      statusCode:
+        error?.statusCode,
 
-        return null;
+      message:
+        error?.message,
 
-      } finally {
+      error,
+    },
+  );
+
+  return null;
+}
+
+       finally {
 
         setIsHydrated(true);
 

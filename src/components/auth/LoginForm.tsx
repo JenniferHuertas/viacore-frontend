@@ -70,11 +70,11 @@ export default function LoginForm({
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
+    watch,
     formState: {
       errors,
-      isValid,
+      touchedFields,
     },
   } = useForm<LoginFormData>({
     resolver:
@@ -82,20 +82,12 @@ export default function LoginForm({
         loginSchema,
       ),
 
-    mode: "onChange",
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
 
-  const email =
-    watch("email");
-
-  const password =
-    watch("password");
-
-  const isDisabled =
-    !email ||
-    !password ||
-    !isValid ||
-    loading;
+  const email = watch("email");
+  const password = watch("password");
 
   useEffect(() => {
 
@@ -115,6 +107,14 @@ export default function LoginForm({
     }
 
   }, [setValue]);
+
+  const onError = () => {
+
+  toast.warning(
+    "Debes completar todos los campos",
+  );
+
+};
 
   const onSubmit = async (
     data: LoginFormData,
@@ -218,7 +218,7 @@ export default function LoginForm({
   return (
     <form
       onSubmit={handleSubmit(
-        onSubmit,
+        onSubmit, onError,
       )}
       noValidate
       autoComplete="off"
@@ -240,7 +240,7 @@ export default function LoginForm({
           {...register("email")}
         />
 
-        {errors.email
+        {touchedFields.email && email && errors.email
           ?.message && (
 
           <p className="text-red-400 text-xs mt-1">
@@ -285,7 +285,7 @@ export default function LoginForm({
           )}
         </button>
 
-        {errors.password
+        {touchedFields.password && password && errors.password
           ?.message && (
 
           <p className="text-red-400 text-xs mt-1">
@@ -325,15 +325,7 @@ export default function LoginForm({
       </div>
 
       <Button
-        type="submit"
-        disabled={
-          isDisabled
-        }
-        className={`w-full transition ${
-          isDisabled
-            ? "opacity-20 cursor-not-allowed"
-            : ""
-        }`}
+        type="submit" className="w-full"
       >
         {loading
           ? "Ingresando..."
