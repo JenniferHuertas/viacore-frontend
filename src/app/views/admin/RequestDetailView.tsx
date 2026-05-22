@@ -54,6 +54,7 @@ export default function RequestDetailView({
 }: {
   id: string;
 }) {
+
   const [request, setRequest] =
     useState<Request | null>(null);
 
@@ -67,41 +68,44 @@ export default function RequestDetailView({
     useState(false);
 
   useEffect(() => {
-    const fetchRequest = async () => {
-      try {
-        const token =
-          localStorage.getItem(
-            "token",
+
+    const fetchRequest =
+      async () => {
+
+        try {
+
+          const data =
+            await getTrainingRequestById(
+              id,
+            );
+
+          setRequest(data);
+
+        } catch (error) {
+
+          console.error(
+            "Error obteniendo solicitud",
+            error,
           );
 
-        if (!token) return;
+        } finally {
 
-        const data =
-          await getTrainingRequestById(
-            id,
-            token,
-          );
-
-        setRequest(data);
-      } catch (error) {
-        console.error(
-          "Error obteniendo solicitud",
-          error,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+          setLoading(false);
+        }
+      };
 
     fetchRequest();
+
   }, [id]);
 
   const handleUploadQuotation =
     async () => {
+
       if (
         !quotationFile ||
         !request
       ) {
+
         toast.warning(
           "Seleccioná un archivo",
         );
@@ -110,6 +114,7 @@ export default function RequestDetailView({
       }
 
       try {
+
         setUploading(true);
 
         const formData =
@@ -132,13 +137,17 @@ export default function RequestDetailView({
         setQuotationFile(
           null,
         );
+
       } catch (error) {
+
         console.error(error);
 
         toast.error(
           "Error enviando cotización",
         );
+
       } finally {
+
         setUploading(false);
       }
     };
@@ -146,7 +155,9 @@ export default function RequestDetailView({
   const getStatusLabel = (
     status: string,
   ) => {
+
     switch (status) {
+
       case "pending":
         return "Pendiente";
 
@@ -173,7 +184,9 @@ export default function RequestDetailView({
   const getStatusColor = (
     status: string,
   ) => {
+
     switch (status) {
+
       case "pending":
         return "text-yellow-400";
 
@@ -198,48 +211,65 @@ export default function RequestDetailView({
   };
 
   if (loading) {
+
     return (
       <AdminLayout>
+
         <div className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-6 text-gray-400">
           Cargando solicitud...
         </div>
+
       </AdminLayout>
     );
   }
 
   if (!request) {
+
     return (
       <AdminLayout>
+
         <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-red-400">
           No se encontró la solicitud.
         </div>
+
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
+
       <div className="space-y-6">
+
         <div className="flex items-center justify-between">
+
           <div>
+
             <h1 className="text-3xl font-semibold text-white">
               Detalle de solicitud
             </h1>
 
             <div className="h-0.5 w-14 bg-[#C7962D] mt-3" />
+
           </div>
 
           <Link href="/admin/requests">
+
             <button className="text-sm text-[#C7962D] hover:underline cursor-pointer">
               ← Volver
             </button>
+
           </Link>
+
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-[#0B0D0F] p-8 space-y-6">
+
           {request.training
             ?.title && (
+
             <div>
+
               <p className="text-sm text-gray-400">
                 Capacitación
               </p>
@@ -250,22 +280,28 @@ export default function RequestDetailView({
                     .title
                 }
               </p>
+
             </div>
           )}
 
           <div>
+
             <p className="text-sm text-gray-400">
               Empresa
             </p>
 
             <p className="mt-1 text-lg font-medium text-white">
-              {request.user
-                ?.companyName ||
-                "Empresa"}
+              {
+                request.user
+                  ?.companyName ||
+                "Empresa"
+              }
             </p>
+
           </div>
 
           <div>
+
             <p className="text-sm text-gray-400">
               Participantes
             </p>
@@ -275,9 +311,11 @@ export default function RequestDetailView({
                 request.participantsCount
               }
             </p>
+
           </div>
 
           <div>
+
             <p className="text-sm text-gray-400">
               Estado
             </p>
@@ -291,9 +329,11 @@ export default function RequestDetailView({
                 request.status,
               )}
             </p>
+
           </div>
 
           <div>
+
             <p className="text-sm text-gray-400">
               Objetivos
             </p>
@@ -301,9 +341,11 @@ export default function RequestDetailView({
             <p className="mt-2 leading-relaxed text-gray-300">
               {request.objectives}
             </p>
+
           </div>
 
           <div>
+
             <p className="text-sm text-gray-400">
               Contexto organizacional
             </p>
@@ -311,107 +353,131 @@ export default function RequestDetailView({
             <p className="mt-2 leading-relaxed text-gray-300">
               {request.context}
             </p>
+
           </div>
 
           {request.status ===
             "awaiting_payment" && (
-              <div className="border-t border-white/10 pt-6 space-y-6">
 
-                <div className="space-y-4 border-b border-white/10 pb-6">
+            <div className="border-t border-white/10 pt-6 space-y-6">
 
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">
-                      Enviar cotización
-                    </h3>
-
-                    <p className="text-sm text-gray-400 mt-2">
-                      Adjuntá la cotización para que el cliente pueda verla y enviar el comprobante.
-                    </p>
-                  </div>
-
-                  <input
-                    type="file"
-                    onChange={(e) =>
-                      setQuotationFile(
-                        e.target
-                          .files?.[0] ??
-                          null,
-                      )
-                    }
-                    className="block w-full rounded-xl border border-white/10 bg-black p-3 text-sm text-gray-300"
-                  />
-
-                  <button
-                    onClick={
-                      handleUploadQuotation
-                    }
-                    disabled={
-                      !quotationFile ||
-                      uploading
-                    }
-                    className="w-fit rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black hover:opacity-90 transition disabled:opacity-50"
-                  >
-                    {uploading
-                      ? "Enviando..."
-                      : "Enviar cotización"}
-                  </button>
-
-                </div>
+              <div className="space-y-4 border-b border-white/10 pb-6">
 
                 <div>
-                  <h2 className="text-xl font-semibold text-white">
-                    Archivos y comprobantes
-                  </h2>
+
+                  <h3 className="text-lg font-semibold text-white">
+                    Enviar cotización
+                  </h3>
 
                   <p className="text-sm text-gray-400 mt-2">
-                    Revisá los archivos enviados por el cliente.
+                    Adjuntá la cotización para que el cliente pueda verla y enviar el comprobante.
                   </p>
+
                 </div>
 
-                {!request.files ||
-                request.files.length ===
-                  0 ? (
-                  <div className="rounded-xl border border-white/10 bg-black/30 p-5 text-sm text-gray-400">
-                    No hay archivos cargados todavía.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {request.files.map(
-                      (file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center justify-between rounded-xl border border-white/10 bg-black/30 p-4"
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-white">
-                              {file.title ||
-                                "Archivo"}
-                            </p>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) =>
+                    setQuotationFile(
+                      e.target
+                        .files?.[0] ??
+                        null,
+                    )
+                  }
+                  className="block w-full rounded-xl border border-white/10 bg-black p-3 text-sm text-gray-300"
+                />
 
-                            <p className="text-xs text-gray-500 mt-1">
-                              Archivo adjunto
-                            </p>
-                          </div>
+                <button
+                  onClick={
+                    handleUploadQuotation
+                  }
+                  disabled={
+                    !quotationFile ||
+                    uploading
+                  }
+                  className="w-fit rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {uploading
+                    ? "Enviando..."
+                    : "Enviar cotización"}
+                </button>
 
-                          <a
-                            href={
-                              file.fileUrl
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-lg border border-[#C7962D]/30 px-4 py-2 text-sm text-[#C7962D] hover:bg-[#C7962D]/10 transition"
-                          >
-                            Ver archivo
-                          </a>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                )}
               </div>
-            )}
+
+              <div>
+
+                <h2 className="text-xl font-semibold text-white">
+                  Archivos y comprobantes
+                </h2>
+
+                <p className="text-sm text-gray-400 mt-2">
+                  Revisá los archivos enviados por el cliente.
+                </p>
+
+              </div>
+
+              {!request.files ||
+              request.files.length ===
+                0 ? (
+
+                <div className="rounded-xl border border-white/10 bg-black/30 p-5 text-sm text-gray-400">
+                  No hay archivos cargados todavía.
+                </div>
+
+              ) : (
+
+                <div className="space-y-3">
+
+                  {request.files.map(
+                    (file) => (
+
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between rounded-xl border border-white/10 bg-black/30 p-4"
+                      >
+
+                        <div>
+
+                          <p className="text-sm font-medium text-white">
+                            {
+                              file.title ||
+                              "Archivo"
+                            }
+                          </p>
+
+                          <p className="text-xs text-gray-500 mt-1">
+                            Archivo adjunto
+                          </p>
+
+                        </div>
+
+                        <a
+                          href={
+                            file.fileUrl
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="rounded-lg border border-[#C7962D]/30 px-4 py-2 text-sm text-[#C7962D] hover:bg-[#C7962D]/10 transition"
+                        >
+                          Descargar archivo
+                        </a>
+
+                      </div>
+                    ),
+                  )}
+
+                </div>
+              )}
+
+            </div>
+          )}
+
         </div>
+
       </div>
+
     </AdminLayout>
   );
 }

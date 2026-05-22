@@ -1,26 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; 
-import { jwtDecode } from "jwt-decode";
-import type { ZodIssue } from "zod";
-
+import { useRouter } from "next/navigation";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-
 import { completeProfile } from "@/services/auth.service";
 import { toast } from "sonner";
 import { completeProfileSchema } from "@/validations/completeProfile.validations";
-import { useUserContext } from "@/context/UserContext";
-
-type DecodedToken = {
-  id: string;
-};
 
 export default function CompleteProfileForm() {
   const router = useRouter();
-  const { login } = useUserContext();
-
   const [formData, setFormData] = useState({
     phone: "",
     country: "",
@@ -33,18 +22,8 @@ export default function CompleteProfileForm() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-  const handleBlur = (
-    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name } = e.target;
-    setTouched((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
-  };
-
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     const updatedValues = { ...formData, [name]: value };
@@ -54,7 +33,7 @@ export default function CompleteProfileForm() {
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue: ZodIssue) => {
+      result.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
       });
@@ -64,42 +43,41 @@ export default function CompleteProfileForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const allTouched = Object.keys(formData).reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
-    setTouched(allTouched);
 
     const validation = completeProfileSchema.safeParse(formData);
 
     if (!validation.success) {
       const fieldErrors: Record<string, string> = {};
-      validation.error.issues.forEach((issue: ZodIssue) => {
+      validation.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
       });
+
       setErrors(fieldErrors);
-      toast.warning("Por favor, revisa los campos marcados en rojo.");
+      setTouched({
+        phone: true,
+        country: true,
+        companyName: true,
+        city: true,
+        address: true,
+      });
+
+      toast.error("Revisá los campos");
       return;
     }
 
-    const decoded = jwtDecode<DecodedToken>(token);
-
     try {
       setLoading(true);
-
-      const res = await completeProfile(decoded.id, token, formData);
-
-      localStorage.setItem("token", res.access_token);
-      document.cookie = `userSession=${res.access_token}; path=/; max-age=604800; SameSite=Lax`;
-
-      login(res.access_token);
+      await completeProfile(formData);
 
       setFormData({
         phone: "",
@@ -112,11 +90,10 @@ export default function CompleteProfileForm() {
       setTouched({});
 
       toast.success("Perfil completado correctamente");
-
       router.push("/");
     } catch (err) {
       console.error(err);
-      toast.error("Error al completar el perfil. Inténtalo de nuevo.");
+      toast.error("Error al completar perfil");
     } finally {
       setLoading(false);
     }
@@ -156,9 +133,9 @@ export default function CompleteProfileForm() {
             <option value="Argentina">🇦🇷 Argentina</option>
             <option value="Uruguay">🇺🇾 Uruguay</option>
             <option value="Chile">🇨🇱 Chile</option>
-            <option value="Colombia">🇨🇴 Colombia</option>
             <option value="Brasil">🇧🇷 Brasil</option>
             <option value="México">🇲🇽 México</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
             <option value="Perú">🇵🇪 Perú</option>
             <option value="España">🇪🇸 España</option>
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>

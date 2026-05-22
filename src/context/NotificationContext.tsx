@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 
@@ -23,32 +22,45 @@ import { useUserContext } from "@/context/UserContext";
 
 type Notification = {
   id: string;
+
   title: string;
+
   message: string;
+
   type: string;
+
   isRead: boolean;
+
   createdAt: string;
 };
 
 type NotificationContextType = {
   notifications: Notification[];
+
   unreadCount: number;
+
   loading: boolean;
+
   fetchNotifications: () => Promise<void>;
-  markAsRead: (notificationId: string) => Promise<void>;
+
+  markAsRead: (
+    notificationId: string,
+  ) => Promise<void>;
+
   markAllAsRead: () => Promise<void>;
 };
 
 const NotificationContext =
-  createContext<NotificationContextType | undefined>(
-    undefined,
-  );
+  createContext<
+    NotificationContextType | undefined
+  >(undefined);
 
 export function NotificationProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
   const [notifications, setNotifications] =
     useState<Notification[]>([]);
 
@@ -58,23 +70,27 @@ export function NotificationProvider({
   const [loading, setLoading] =
     useState(true);
 
-  const previousNotificationIds =
-    useRef<string[]>([]);
-
   const { user, isHydrated } =
     useUserContext();
 
   const fetchNotifications =
     async () => {
+
       try {
+
         if (!user?.id) return;
 
         const [
           notificationsData,
           unreadData,
         ] = await Promise.all([
-          getNotificationsByUser(user.id),
-          getUnreadCount(user.id),
+          getNotificationsByUser(
+            user.id,
+          ),
+
+          getUnreadCount(
+            user.id,
+          ),
         ]);
 
         setNotifications(
@@ -84,12 +100,16 @@ export function NotificationProvider({
         setUnreadCount(
           unreadData,
         );
+
       } catch (error) {
+
         console.error(
           "Error loading notifications",
           error,
         );
+
       } finally {
+
         setLoading(false);
       }
     };
@@ -98,7 +118,9 @@ export function NotificationProvider({
     async (
       notificationId: string,
     ) => {
+
       try {
+
         await markNotificationAsRead(
           notificationId,
         );
@@ -116,9 +138,13 @@ export function NotificationProvider({
         );
 
         setUnreadCount((prev) =>
-          prev > 0 ? prev - 1 : 0,
+          prev > 0
+            ? prev - 1
+            : 0,
         );
+
       } catch (error) {
+
         console.error(
           "Error marking notification as read",
           error,
@@ -128,7 +154,9 @@ export function NotificationProvider({
 
   const markAllAsRead =
     async () => {
+
       try {
+
         if (!user?.id) return;
 
         await markAllNotifications(
@@ -143,7 +171,9 @@ export function NotificationProvider({
         );
 
         setUnreadCount(0);
+
       } catch (error) {
+
         console.error(
           "Error marking all notifications as read",
           error,
@@ -152,26 +182,43 @@ export function NotificationProvider({
     };
 
   useEffect(() => {
+
     if (
       !isHydrated ||
       !user?.id
     ) {
+
       setLoading(false);
+
       return;
     }
 
     fetchNotifications();
+
   }, [isHydrated, user]);
 
   useEffect(() => {
-    console.log(
-      "SOCKET EFFECT",
-      {
-        userId: user?.id,
-        socketId: socket.id,
-        connected: socket.connected,
-      },
-    );
+
+    if (
+      !isHydrated ||
+      !user?.id
+    ) {
+      return;
+    }
+
+    const interval =
+      setInterval(() => {
+
+        fetchNotifications();
+
+      }, 10000);
+
+    return () =>
+      clearInterval(interval);
+
+  }, [isHydrated, user]);
+
+  useEffect(() => {
 
     if (
       !isHydrated ||
@@ -181,6 +228,7 @@ export function NotificationProvider({
     }
 
     const handleConnect = () => {
+
       console.log(
         "JOIN ROOM",
         user.id,
@@ -192,56 +240,26 @@ export function NotificationProvider({
       );
     };
 
-    const handleNewNotification = (
-      notification: Notification,
-    ) => {
-      console.log(
-        "NOTIFICATION RECEIVED",
-        notification,
-      );
+    const handleNewNotification =
+      async (
+        notification: Notification,
+      ) => {
 
-      setNotifications((prev) => {
-        const exists =
-          prev.some(
-            (item) =>
-              item.id ===
-              notification.id,
-          );
+        console.log(
+          "NOTIFICATION RECEIVED",
+          notification,
+        );
 
-        if (exists) return prev;
+        await fetchNotifications();
 
-        return [
+        toast.success(
+          notification.title,
           {
-            id:
-              notification.id ||
-              crypto.randomUUID(),
-
-            title:
-              notification.title,
-
-            message:
+            description:
               notification.message,
-
-            type:
-              notification.type,
-
-            isRead:
-              notification.isRead ??
-              false,
-
-            createdAt:
-              notification.createdAt ||
-              new Date().toISOString(),
           },
-
-          ...prev,
-        ];
-      });
-
-      setUnreadCount(
-        (prev) => prev + 1,
-      );
-    };
+        );
+      };
 
     socket.on(
       "connect",
@@ -254,15 +272,15 @@ export function NotificationProvider({
     );
 
     if (!socket.connected) {
+
       socket.connect();
+
     } else {
+
       handleConnect();
     }
 
     return () => {
-      console.log(
-        "SOCKET CLEANUP",
-      );
 
       socket.off(
         "connect",
@@ -274,57 +292,22 @@ export function NotificationProvider({
         handleNewNotification,
       );
     };
+
   }, [isHydrated, user]);
-
-  useEffect(() => {
-    if (
-      previousNotificationIds.current
-        .length === 0
-    ) {
-      previousNotificationIds.current =
-        notifications.map(
-          (notification) =>
-            notification.id,
-        );
-
-      return;
-    }
-
-    const newNotifications =
-      notifications.filter(
-        (notification) =>
-          !previousNotificationIds.current.includes(
-            notification.id,
-          ),
-      );
-
-    newNotifications.forEach(
-      (notification) => {
-        toast.success(
-          notification.title,
-          {
-            description:
-              notification.message,
-          },
-        );
-      },
-    );
-
-    previousNotificationIds.current =
-      notifications.map(
-        (notification) =>
-          notification.id,
-      );
-  }, [notifications]);
 
   return (
     <NotificationContext.Provider
       value={{
         notifications,
+
         unreadCount,
+
         loading,
+
         fetchNotifications,
+
         markAsRead,
+
         markAllAsRead,
       }}
     >
@@ -335,6 +318,7 @@ export function NotificationProvider({
 
 export const useNotifications =
   () => {
+
     const context =
       useContext(
         NotificationContext,

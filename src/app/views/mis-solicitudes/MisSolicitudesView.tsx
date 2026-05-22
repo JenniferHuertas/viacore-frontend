@@ -27,15 +27,8 @@ export default function MisSolicitudesView() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const response = await getMyTrainingRequests(token);
-        if (response && response.data) {
-          setSolicitudes(response.data);
-        } else if (Array.isArray(response)) {
-          setSolicitudes(response);
-        }
+        const data = await getMyTrainingRequests();
+        setSolicitudes(data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -44,15 +37,13 @@ export default function MisSolicitudesView() {
     };
 
     fetchRequests();
-    socket.on("notification:new", async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
 
-      const updatedResponse = await getMyTrainingRequests(token);
-      if (updatedResponse && updatedResponse.data) {
-        setSolicitudes(updatedResponse.data);
-      } else if (Array.isArray(updatedResponse)) {
-        setSolicitudes(updatedResponse);
+    socket.on("notification:new", async () => {
+      try {
+        const updatedRequests = await getMyTrainingRequests();
+        setSolicitudes(updatedRequests);
+      } catch (error) {
+        console.error("Error al actualizar solicitudes por socket:", error);
       }
     });
 
