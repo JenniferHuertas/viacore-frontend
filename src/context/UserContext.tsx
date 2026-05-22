@@ -140,7 +140,7 @@ export function UserProvider({
         router.push("/");
 
         toast.success(
-          "SesiÃ³n cerrada exitosamente",
+          "Sesión cerrada exitosamente",
         );
       }
     };
