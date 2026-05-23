@@ -15,7 +15,7 @@ import {
   getTrainingRequestById,
 } from "@/services/trainingRequests.service";
 
-import { editTrainingRequestSchema } from "@/validations/editTrainingRequestValidator";
+import { editTrainingRequestSchema } from "@/validations/edit.training.request.validator";
 
 type Props = {
   id: string;

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { createTrainingRequest } from "@/services/trainingRequests.service";
 
-import { trainingRequestSchema } from "@/validations/trainingRequest.validations";
+import { trainingRequestSchema } from "@/validations/training.request.validations";
 
 export default function SolicitudesView() {
 
