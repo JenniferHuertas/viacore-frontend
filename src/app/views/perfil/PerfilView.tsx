@@ -48,8 +48,10 @@ export default function PerfilView() {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: {
       errors,
+      dirtyFields,
     },
   } = useForm<ProfileFormData>({
     resolver:
@@ -57,7 +59,8 @@ export default function PerfilView() {
         profileSchema,
       ),
 
-    mode: "onChange",
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
 
   useEffect(() => {
@@ -198,9 +201,21 @@ export default function PerfilView() {
   onSubmit={handleSubmit(
     onSubmit,
     () => {
-      toast.warning(
-        "Debes completar todos los campos",
-      );
+
+      const values = getValues();
+
+      const hasEmptyFields =
+        Object.values(values).some(
+          (value) =>
+            !String(value).trim(),
+        );
+
+      if (hasEmptyFields) {
+
+        toast.warning(
+          "Debes completar todos los campos",
+        );
+      }
     },
   )}
   className="space-y-10"
@@ -223,17 +238,13 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.name
-                    ?.message && (
-
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.name
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+    {dirtyFields.name &&
+ getValues("name").trim() !== "" &&
+ errors.name?.message && (
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.name.message)}
+  </p>
+)}
 
                 </div>
 
@@ -246,17 +257,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.phone
-                    ?.message && (
+     {dirtyFields.phone &&
+ getValues("phone").trim() !== "" &&
+ errors.phone?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.phone
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.phone.message)}
+  </p>
+)}
 
                 </div>
 
@@ -335,17 +343,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.city
-                    ?.message && (
+       {dirtyFields.city &&
+ getValues("city").trim() !== "" &&
+ errors.city?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.city
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.city.message)}
+  </p>
+)}
 
                 </div>
 
@@ -370,17 +375,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.companyName
-                    ?.message && (
+       {dirtyFields.companyName &&
+ getValues("companyName").trim() !== "" &&
+ errors.companyName?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.companyName
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.companyName.message)}
+  </p>
+)}
 
                 </div>
 
@@ -393,17 +395,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.address
-                    ?.message && (
+     {dirtyFields.address &&
+ getValues("address").trim() !== "" &&
+ errors.address?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.address
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.address.message)}
+  </p>
+)}
 
                 </div>
 
