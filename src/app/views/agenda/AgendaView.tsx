@@ -9,6 +9,7 @@ import { createMeeting } from "@/services/meetings.service";
 import { useUser } from "@/hooks/useUser";
 
 import { meetingSchema } from "@/validations/meeting.validations";
+import Link from "next/link";
 
 type AgendaViewProps = {
   id: string;
@@ -61,16 +62,22 @@ export default function AgendaView({
       try {
         setLoading(true);
 
-        await createMeeting({
+        const meeting = await createMeeting({
           date: form.fecha,
           time: form.horario,
           targetUserId: user.id,
           trainingRequestId: id,
         });
 
-        router.push(
-          `/mis-solicitudes/${id}`,
-        );
+        // router.push(
+        //   `/mis-solicitudes/${id}`,
+        // );
+        if (meeting?.schedulingUrl) {
+          window.open(meeting.schedulingUrl, '_blank'); // abre Calendly en nueva pestaña
+          router.push(`/mis-solicitudes/${id}`);        // y redirige tu app también
+        } else {
+          router.push(`/mis-solicitudes/${id}`);
+        }
       } catch (error) {
         console.error(
           "Error creando reunión",
