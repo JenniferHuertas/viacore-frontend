@@ -61,3 +61,22 @@ export const cancelMeeting =
       },
     );
   };
+
+export const rescheduleMeeting =
+  async (
+    id: string,
+
+    newStartTime: string,
+  ) => {
+
+    return await api(
+      `/meetings/${id}/reschedule`,
+      {
+        method: "PATCH",
+
+        body: JSON.stringify({
+          newStartTime,
+        }),
+      },
+    );
+  };

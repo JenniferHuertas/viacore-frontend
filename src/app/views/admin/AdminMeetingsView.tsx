@@ -13,9 +13,9 @@ import {
 type Meeting = {
   id: string;
 
-  date: string;
+  startTime: string;
 
-  time: string;
+  endTime: string;
 
   status: string;
 
@@ -249,12 +249,31 @@ export default function AdminMeetingsView() {
 
                       <span>
                         📅{" "}
-                        {meeting.date}
+                        {new Date(
+                          meeting.startTime,
+                        ).toLocaleDateString(
+                          "es-AR",
+                          {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
                       </span>
 
                       <span>
                         🕒{" "}
-                        {meeting.time}
+                        {new Date(
+                          meeting.startTime,
+                        ).toLocaleTimeString(
+                          "es-AR",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}{" "}
+                        hs
                       </span>
 
                     </div>
@@ -268,6 +287,7 @@ export default function AdminMeetingsView() {
                         meeting.meetLink
                       }
                       target="_blank"
+                      rel="noopener noreferrer"
                       className="rounded-xl border border-[#C7962D]/30 px-5 py-3 text-sm font-medium text-[#C7962D] transition hover:bg-[#C7962D]/10"
                     >
                       Entrar a Meet
