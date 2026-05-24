@@ -1,6 +1,6 @@
     import { z } from "zod";
     
-    export const registerSchema = z
+    export const resetPasswordSchema = z
       .object({
     password: z
       .string()

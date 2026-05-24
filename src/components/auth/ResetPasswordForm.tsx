@@ -1,85 +1,89 @@
 "use client";
 
-import { useState } from "react";
-
 import { useSearchParams } from "next/navigation";
-
 import { toast } from "sonner";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {resetPasswordSchema} from "../../validations/resset.password.validations";
+
+type FormData = {
+  password: string;
+  confirmPassword: string;
+};
+
 export default function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
-  const searchParams =
-    useSearchParams();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting, touchedFields },
+  } = useForm<FormData>({
+    resolver: zodResolver(resetPasswordSchema),
+     mode: "onBlur",
+    reValidateMode: "onBlur",
+    shouldUnregister: false,
+  });
 
-  const token =
-    searchParams.get("token");
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
 
-  const [password, setPassword] =
-    useState("");
+  const handleEmptySubmitToast = () => {
+    const hasEmpty = !password || !confirmPassword;
 
-  const [
-    confirmPassword,
-    setConfirmPassword,
-  ] = useState("");
+    if (hasEmpty) {
+      toast.warning("Debes completar todos los campos");
+    }
+  };
 
-  const [loading, setLoading] =
-    useState(false);
-
-  const handleSubmit = async () => {
-
-    if (!password || !confirmPassword) {
-
-      toast.warning(
-        "Debes completar todos los campos",
-      );
-
+  const onSubmit = async (data: FormData) => {
+    if (!token) {
+      toast.error("Token inválido o expirado");
       return;
     }
 
     try {
-
-      setLoading(true);
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`,
         {
           method: "POST",
-
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             token,
-            password,
+            password: data.password,
           }),
-        },
+        }
       );
 
-      if (!res.ok) {
-        throw new Error();
-      }
+     if (!res.ok) {
+  const data = await res.json().catch(() => null);
 
-      toast.success(
-        "Contraseña actualizada correctamente",
-      );
+  throw new Error(data?.message || "Error");
+}
 
+      toast.success("Contraseña actualizada correctamente");
     } catch (error) {
-
-      toast.error(
-        "No se pudo actualizar la contraseña",
-      );
-
-    } finally {
-
-      setLoading(false);
+      toast.error("No se pudo actualizar la contraseña");
     }
   };
 
-  return (
-    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111315] p-8 shadow-2xl">
+  const onInvalid = () => {
+  };
 
+  return (
+    <form
+      onSubmit={(e) => {
+        handleEmptySubmitToast(); 
+        handleSubmit(onSubmit, onInvalid)(e); 
+      }}
+      className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111315] p-8 shadow-2xl"
+    >
       <h1 className="text-2xl font-semibold text-white mb-2">
         Nueva contraseña
       </h1>
@@ -90,47 +94,45 @@ export default function ResetPasswordForm() {
 
       <div className="space-y-4">
 
-        <input
-          type="password"
-          placeholder="Nueva contraseña"
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value,
-            )
-          }
-          className="w-full rounded-lg bg-black/40 border border-white/10 px-4 py-3 text-white outline-none focus:border-white/30"
-        />
+        <div>
+          <input
+            type="password"
+            placeholder="Nueva contraseña"
+            {...register("password")}
+            className="w-full rounded-lg bg-black/40 border border-white/10 px-4 py-3 text-white outline-none focus:border-white/30"
+          />
+     {errors.password && touchedFields.password && (
+  <p className="text-red-400 text-sm mt-1">
+    {errors.password.message}
+  </p>
+)}
+        </div>
 
-        <input
-          type="password"
-          placeholder="Confirmar contraseña"
-          value={confirmPassword}
-          onChange={(e) =>
-            setConfirmPassword(
-              e.target.value,
-            )
-          }
-          className="w-full rounded-lg bg-black/40 border border-white/10 px-4 py-3 text-white outline-none focus:border-white/30"
-        />
+        <div>
+          <input
+            type="password"
+            placeholder="Confirmar contraseña"
+            {...register("confirmPassword")}
+            className="w-full rounded-lg bg-black/40 border border-white/10 px-4 py-3 text-white outline-none focus:border-white/30"
+          />
+      {errors.confirmPassword && touchedFields.confirmPassword && (
+  <p className="text-red-400 text-sm mt-1">
+    {errors.confirmPassword.message}
+  </p>
+)}
+        </div>
 
         <button
-          onClick={handleSubmit}
-          disabled={loading}
+          type="submit"
+          disabled={isSubmitting}
           className="w-full rounded-lg text-black py-3 font-medium bg-linear-to-r from-[#C7962D] to-[#E0B84F]
-          transition-all duration-200
-          hover:brightness-110
-          hover:shadow-lg hover:shadow-[#C7962D]/20
-          disabled:opacity-50
-          cursor-pointer"
+          hover:brightness-110 transition-all
+          disabled:opacity-50 cursor-pointer"
         >
-          {loading
-            ? "Actualizando..."
-            : "Cambiar contraseña"}
+          {isSubmitting ? "Actualizando..." : "Cambiar contraseña"}
         </button>
 
       </div>
-
-    </div>
+    </form>
   );
 }
