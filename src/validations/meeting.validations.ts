@@ -14,9 +14,7 @@ const esHorarioLaboral = (time: string) => {
 };
 
 export const meetingSchema = z.object({
-  fecha: z
-    .string()
-    .refine(esDiaHabil, "Solo días hábiles (Lun–Vie)"),
+  fecha: z.string().refine(esDiaHabil, "Solo días hábiles (Lun–Vie)"),
 
   horario: z
     .string()
