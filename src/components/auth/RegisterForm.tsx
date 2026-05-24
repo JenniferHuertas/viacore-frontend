@@ -260,6 +260,8 @@ export default function RegisterForm({
 
       } catch (err: any) {
 
+        console.error(err);
+
         const mensajeBackend =
           err?.message ||
           "Error al registrarse";
@@ -285,7 +287,7 @@ export default function RegisterForm({
         className="space-y-5"
       >
 
-        <GoogleButton />
+        <GoogleButton mode="signup" />
 
         <div className="text-center text-gray-500">
           o

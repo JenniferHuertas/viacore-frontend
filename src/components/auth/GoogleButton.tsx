@@ -1,11 +1,17 @@
 "use client";
 
-export default function GoogleButton() {
+type GoogleButtonProps = {
+  mode: "signin" | "signup";
+};
+
+export default function GoogleButton({
+  mode,
+}: GoogleButtonProps) {
 
   const handleGoogleLogin = () => {
 
     window.location.href =
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/google?mode=${mode}`;
   };
 
   return (

@@ -32,6 +32,10 @@ import {
 } from "@/context/ChatContext";
 
 import {
+  useUserContext,
+} from "@/context/UserContext";
+
+import {
   getChatHistory,
   sendMessage,
   type ChatMessage as ChatMessageType,
@@ -70,6 +74,10 @@ export default function ChatWidget() {
   const {
     trainingRequestId,
   } = useChatContext();
+
+  const {
+    isAuthenticated,
+  } = useUserContext();
 
   const generatedSessionId =
     useMemo(() => {
@@ -117,8 +125,14 @@ export default function ChatWidget() {
         const identifier =
           trainingRequestId || sessionId;
 
-        if (!identifier)
+        // NO HACER REQUESTS SIN LOGIN
+
+        if (
+          !identifier ||
+          !isAuthenticated
+        ) {
           return;
+        }
 
         try {
 
@@ -129,7 +143,23 @@ export default function ChatWidget() {
 
           setMessages(history);
 
-        } catch {
+        } catch (error: any) {
+
+          // HISTORIAL NUEVO
+
+          if (
+            error?.statusCode === 404
+          ) {
+
+            setMessages([]);
+
+            return;
+          }
+
+          console.error(
+            "CHAT HISTORY ERROR:",
+            error,
+          );
 
           setMessages([]);
 
@@ -141,6 +171,7 @@ export default function ChatWidget() {
   }, [
     sessionId,
     trainingRequestId,
+    isAuthenticated,
   ]);
 
   useEffect(() => {

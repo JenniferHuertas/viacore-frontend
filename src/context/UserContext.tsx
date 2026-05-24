@@ -22,8 +22,11 @@ export type User = {
 
 type UserContextType = {
   user: User | null;
+
   isAuthenticated: boolean;
+
   isProfileCompleted: boolean;
+
   isHydrated: boolean;
 
   login: () => Promise<void>;
@@ -50,7 +53,8 @@ export function UserProvider({
   const [isHydrated, setIsHydrated] =
     useState(false);
 
-  const router = useRouter();
+  const router =
+    useRouter();
 
   const refreshUser =
     async (): Promise<User | null> => {
@@ -58,49 +62,51 @@ export function UserProvider({
       try {
 
         const profile =
-          await api("/auth/profile", {
-            method: "GET",
+          await api(
+            "/auth/profile",
+            {
+              method: "GET",
 
-            headers: {
-              "Cache-Control": "no-cache",
+              headers: {
+                "Cache-Control":
+                  "no-cache",
+              },
             },
-          });
+          );
 
         setUser(profile);
 
         return profile;
 
-} catch (error: any) {
+      } catch (error: any) {
 
-  if (
-    error?.statusCode === 401
-  ) {
+        if (
+          error?.statusCode === 401
+        ) {
 
-    setUser(null);
+          setUser(null);
 
-    return null;
-  }
+          return null;
+        }
 
-  console.error(
-    "ERROR REFRESH USER",
-    {
-      statusCode:
-        error?.statusCode,
+        console.error(
+          "ERROR REFRESH USER",
+          {
+            statusCode:
+              error?.statusCode,
 
-      message:
-        error?.message,
+            message:
+              error?.message,
 
-      error,
-    },
-  );
+            error,
+          },
+        );
 
-  return null;
-}
+        return null;
 
-       finally {
+      } finally {
 
         setIsHydrated(true);
-
       }
     };
 
@@ -109,6 +115,63 @@ export function UserProvider({
     refreshUser();
 
   }, []);
+
+  useEffect(() => {
+
+    if (
+      !isHydrated ||
+      !user
+    ) {
+
+      return;
+    }
+
+    const isAdmin =
+      user.role === "Admin";
+
+    const isProfileCompleted =
+      user.profileCompleted;
+
+    const currentPath =
+      window.location.pathname;
+
+    const isOnboardingPage =
+      currentPath.startsWith(
+        "/completar-perfil",
+      );
+
+    // BLOQUEO VISUAL ONBOARDING
+
+    if (
+      !isAdmin &&
+      !isProfileCompleted &&
+      !isOnboardingPage
+    ) {
+
+      toast.warning(
+        "Debes completar tu perfil para continuar.",
+      );
+
+      router.replace(
+        "/completar-perfil",
+      );
+    }
+
+    // EVITAR VOLVER AL ONBOARDING
+
+    if (
+      isProfileCompleted &&
+      isOnboardingPage
+    ) {
+
+      router.replace("/");
+    }
+
+  }, [
+    user,
+    isHydrated,
+    router,
+  ]);
 
   const login =
     async () => {
@@ -148,7 +211,6 @@ export function UserProvider({
   return (
     <UserContext.Provider
       value={{
-
         user,
 
         isAuthenticated:
@@ -164,7 +226,6 @@ export function UserProvider({
         logout,
 
         refreshUser,
-
       }}
     >
       {children}
