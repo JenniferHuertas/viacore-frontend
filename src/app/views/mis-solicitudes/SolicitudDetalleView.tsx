@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 
 import { getTrainingRequestById } from "@/services/trainingRequests.service";
 
+import { useChatContext } from "@/context/ChatContext";
+
 type SolicitudDetalleViewProps = {
   id: string;
 };
@@ -13,9 +15,28 @@ type SolicitudDetalleViewProps = {
 export default function SolicitudDetalleView({
   id,
 }: SolicitudDetalleViewProps) {
+
   const [solicitud, setSolicitud] = useState<any>(null);
 
   const [loading, setLoading] = useState(true);
+
+  const { setTrainingRequestId } =
+    useChatContext();
+
+  useEffect(() => {
+
+    setTrainingRequestId(id);
+
+    return () => {
+
+      setTrainingRequestId(undefined);
+
+    };
+
+  }, [
+    id,
+    setTrainingRequestId,
+  ]);
 
   useEffect(() => {
     const fetchSolicitud = async () => {

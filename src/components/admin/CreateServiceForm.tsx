@@ -7,7 +7,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 import { createTraining } from "@/services/training.service";
-import { createServiceSchema } from "@/validations/createServiceValidator";
+import { createServiceSchema } from "@/validations/create.service.validator";
 
 import { useRouter } from "next/navigation";
 
