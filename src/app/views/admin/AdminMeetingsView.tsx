@@ -265,7 +265,7 @@ export default function AdminMeetingsView() {
 
                     <a
                       href={
-                        meeting.link
+                        meeting.meetLink
                       }
                       target="_blank"
                       className="rounded-xl border border-[#C7962D]/30 px-5 py-3 text-sm font-medium text-[#C7962D] transition hover:bg-[#C7962D]/10"
