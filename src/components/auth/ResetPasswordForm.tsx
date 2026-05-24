@@ -39,8 +39,8 @@ export default function ResetPasswordForm() {
   const searchParams =
     useSearchParams();
 
-  const email =
-    searchParams.get("email");
+  const token =
+    searchParams.get("token");
 
   const {
     register,
@@ -91,10 +91,10 @@ export default function ResetPasswordForm() {
       data: FormData,
     ) => {
 
-      if (!email) {
+      if (!token) {
 
         toast.error(
-          "Correo inválido.",
+          "Token inválido.",
         );
 
         return;
@@ -114,7 +114,7 @@ export default function ResetPasswordForm() {
               },
 
               body: JSON.stringify({
-                email,
+                token,
                 password:
                   data.password,
               }),
@@ -139,6 +139,9 @@ export default function ResetPasswordForm() {
         toast.success(
           "Contraseña actualizada correctamente",
         );
+
+        window.location.href =
+          "/autenticacion";
 
       } catch (error: any) {
 
