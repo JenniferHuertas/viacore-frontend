@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useSearchParams } from "next/navigation";
 
 import { toast } from "sonner";
@@ -13,6 +15,11 @@ import {
 } from "@hookform/resolvers/zod";
 
 import {
+  Eye,
+  EyeOff,
+} from "lucide-react";
+
+import {
   resetPasswordSchema,
 } from "../../validations/resset.password.validations";
 
@@ -22,6 +29,12 @@ type FormData = {
 };
 
 export default function ResetPasswordForm() {
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const searchParams =
     useSearchParams();
@@ -77,8 +90,6 @@ export default function ResetPasswordForm() {
     async (
       data: FormData,
     ) => {
-
-      
 
       if (!email) {
 
@@ -174,10 +185,14 @@ export default function ResetPasswordForm() {
 
       <div className="space-y-4">
 
-        <div>
+        <div className="relative">
 
           <input
-            type="password"
+            type={
+              showPassword
+                ? "text"
+                : "password"
+            }
             placeholder="Nueva contraseña"
             {...register(
               "password",
@@ -190,11 +205,36 @@ export default function ResetPasswordForm() {
               border-white/10
               px-4
               py-3
+              pr-12
               text-white
               outline-none
               focus:border-white/30
             "
           />
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowPassword(
+                !showPassword,
+              )
+            }
+            className="
+              absolute
+              right-4
+              top-1/2
+              -translate-y-1/2
+              text-white/60
+              hover:text-white
+              transition-colors
+            "
+          >
+
+            {showPassword
+              ? <EyeOff size={20} />
+              : <Eye size={20} />}
+
+          </button>
 
           {errors.password &&
             touchedFields.password && (
@@ -208,10 +248,14 @@ export default function ResetPasswordForm() {
 
         </div>
 
-        <div>
+        <div className="relative">
 
           <input
-            type="password"
+            type={
+              showConfirmPassword
+                ? "text"
+                : "password"
+            }
             placeholder="Confirmar contraseña"
             {...register(
               "confirmPassword",
@@ -224,11 +268,36 @@ export default function ResetPasswordForm() {
               border-white/10
               px-4
               py-3
+              pr-12
               text-white
               outline-none
               focus:border-white/30
             "
           />
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowConfirmPassword(
+                !showConfirmPassword,
+              )
+            }
+            className="
+              absolute
+              right-4
+              top-1/2
+              -translate-y-1/2
+              text-white/60
+              hover:text-white
+              transition-colors
+            "
+          >
+
+            {showConfirmPassword
+              ? <EyeOff size={20} />
+              : <Eye size={20} />}
+
+          </button>
 
           {errors.confirmPassword &&
             touchedFields.confirmPassword && (
