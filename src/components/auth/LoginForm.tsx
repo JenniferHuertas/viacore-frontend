@@ -35,6 +35,8 @@ import { loginSchema } from "@/validations/login.validations";
 
 import { useUser } from "@/hooks/useUser";
 
+import ForgetPasswordModal from "./ForgetPasswordModal";
+
 type LoginFormProps = {
   onSwitchToRegister: () => void;
 };
@@ -66,6 +68,8 @@ export default function LoginForm({
 
   const [rememberMe, setRememberMe] =
     useState(false);
+
+  const [forgotPassword, setForgotPassword] = useState(false);  
 
   const {
     register,
@@ -216,6 +220,7 @@ export default function LoginForm({
   };
 
   return (
+    <>
     <form
       onSubmit={handleSubmit(
         onSubmit, onError,
@@ -318,9 +323,13 @@ export default function LoginForm({
 
         </label>
 
-        <span className="text-[#C7962D] cursor-pointer hover:underline">
-          ¿Olvidaste tu contraseña?
-        </span>
+    <button
+  type="button"
+  onClick={() => setForgotPassword(true)}
+  className="text-[#C7962D] hover:underline cursor-pointer"
+>
+  ¿Olvidaste tu contraseña?
+</button>
 
       </div>
 
@@ -349,5 +358,11 @@ export default function LoginForm({
       </p>
 
     </form>
+
+      {forgotPassword && (
+        <ForgetPasswordModal
+        onClose={() => setForgotPassword(false)}/>
+      )}
+      </>
   );
 }

@@ -321,7 +321,9 @@ export default function SolicitudDetalleView({
           </div>
         )}
 
-        {solicitud.status === "scheduled" && (
+        {solicitud.status ===
+          "awaiting_payment" && (
+
           <div className="mt-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-[#C7962D]/20 bg-[#C7962D]/10 rounded-xl p-5">
             <span className="text-sm text-[#F4D27A]">
               La reunión fue coordinada correctamente.
