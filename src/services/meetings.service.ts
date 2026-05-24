@@ -11,6 +11,19 @@ export const getMeetings =
     );
   };
 
+export const getAvailability =
+  async (
+    date: string,
+  ) => {
+
+    return await api(
+      `/meetings/availability?date=${date}`,
+      {
+        method: "GET",
+      },
+    );
+  };
+
 export const createMeeting =
   async (
     meetingData: {
@@ -18,9 +31,9 @@ export const createMeeting =
 
       time: string;
 
-      targetUserId: string;
-
       trainingRequestId: string;
+
+      topic?: string;
     },
   ) => {
 
