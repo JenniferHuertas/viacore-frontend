@@ -10,7 +10,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 
 import { getTrainingById, updateTraining } from "@/services/training.service";
 
-import { serviceSchema } from "@/validations/serviceValidator";
+import { serviceSchema } from "@/validations/service.validator";
 
 type Props = {
   id: string;

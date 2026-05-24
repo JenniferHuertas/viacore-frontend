@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { createTrainingRequest } from "@/services/trainingRequests.service";
 
-import { trainingRequestSchema } from "@/validations/trainingRequest.validations";
+import { trainingRequestSchema } from "@/validations/training.request.validations";
 
 export default function SolicitudesView() {
 
@@ -25,11 +25,18 @@ export default function SolicitudesView() {
   const router =
     useRouter();
 
+  const [touched, setTouched] =
+  useState<Record<string, boolean>>(
+    {},
+  );
+
   const [trainingId, setTrainingId] =
     useState("");
 
   const [errors, setErrors] =
-    useState<any>({});
+  useState<Record<string, string>>(
+    {},
+  );
 
   const [submitting, setSubmitting] =
     useState(false);
@@ -100,38 +107,79 @@ export default function SolicitudesView() {
 
   }, [searchParams]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement |
-      HTMLTextAreaElement
-    >,
-  ) => {
+const handleChange = (
+  e: React.ChangeEvent<
+    HTMLInputElement |
+    HTMLTextAreaElement
+  >,
+) => {
 
-    const updatedForm = {
-      ...form,
+  const {
+    name,
+    value,
+  } = e.target;
 
-      [e.target.name]:
-        e.target.value,
-    };
-
-    setForm(updatedForm);
-
-    const resultado =
-      trainingRequestSchema.safeParse(
-        updatedForm,
-      );
-
-    if (!resultado.success) {
-
-      setErrors(
-        resultado.error.format(),
-      );
-
-    } else {
-
-      setErrors({});
-    }
+  const updatedForm = {
+    ...form,
+    [name]: value,
   };
+
+  setForm(updatedForm);
+};
+
+const handleBlur = (
+  e: React.FocusEvent<
+    HTMLInputElement |
+    HTMLTextAreaElement
+  >,
+) => {
+
+  const {
+    name,
+    value,
+  } = e.target;
+
+  if (!value.trim()) {
+    return;
+  }
+
+  setTouched((prev) => ({
+    ...prev,
+    [name]: true,
+  }));
+
+  const updatedForm = {
+    ...form,
+    [name]: value,
+  };
+
+  const validation =
+    trainingRequestSchema.safeParse(
+      updatedForm,
+    );
+
+  if (!validation.success) {
+
+    const fieldError =
+      validation.error.issues.find(
+        (issue) =>
+          issue.path[0] === name,
+      );
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]:
+        fieldError?.message || "",
+    }));
+
+  } else {
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  }
+};
 
   const handleSubmit =
     async (
@@ -145,18 +193,53 @@ export default function SolicitudesView() {
           form,
         );
 
-      if (!validation.success) {
+if (!validation.success) {
 
-        setErrors(
-          validation.error.format(),
-        );
+  const hasEmptyFields =
+    !form.personas.trim() ||
+    !form.objetivo.trim() ||
+    !form.contexto.trim();
 
-        toast.error(
-          "Revisá los campos del formulario",
-        );
+  if (hasEmptyFields) {
 
-        return;
+    toast.warning(
+      "Debes completar todos los campos",
+    );
+
+    return;
+  }
+
+  const formattedErrors:
+    Record<string, string> =
+      {};
+
+  validation.error.issues.forEach(
+    (issue) => {
+
+      const field =
+        issue.path[0] as string;
+
+      if (
+        field &&
+        !formattedErrors[field]
+      ) {
+
+        formattedErrors[field] =
+          issue.message;
       }
+    },
+  );
+
+  setTouched({
+  personas: true,
+  objetivo: true,
+  contexto: true,
+});
+
+  setErrors(formattedErrors);
+
+  return;
+}
 
       try {
 
@@ -227,6 +310,7 @@ export default function SolicitudesView() {
             handleSubmit
           }
           className="space-y-6"
+          noValidate
         >
 
           <div>
@@ -255,7 +339,6 @@ export default function SolicitudesView() {
             <input
               name="personas"
               type="number"
-              min={1}
               onChange={
                 handleChange
               }
@@ -263,15 +346,14 @@ export default function SolicitudesView() {
                 form.personas
               }
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
-              required
+              onBlur={handleBlur}
             />
 
-            {errors.personas?._errors?.[0] && (
+            {touched.personas && errors.personas && (
 
               <p className="text-red-400 text-sm mt-1">
                 {
                   errors.personas
-                    ._errors[0]
                 }
               </p>
 
@@ -287,7 +369,6 @@ export default function SolicitudesView() {
 
             <input
               name="objetivo"
-              minLength={20}
               onChange={
                 handleChange
               }
@@ -295,15 +376,14 @@ export default function SolicitudesView() {
                 form.objetivo
               }
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
-              required
+              onBlur={handleBlur}
             />
 
-            {errors.objetivo?._errors?.[0] && (
+            {touched.objetivo && errors.objetivo && (
 
               <p className="text-red-400 text-sm mt-1">
                 {
                   errors.objetivo
-                    ._errors[0]
                 }
               </p>
 
@@ -319,7 +399,6 @@ export default function SolicitudesView() {
 
             <textarea
               name="contexto"
-              minLength={30}
               onChange={
                 handleChange
               }
@@ -327,15 +406,14 @@ export default function SolicitudesView() {
                 form.contexto
               }
               className="w-full mt-2 p-3 rounded-md bg-white/5 border border-white/10"
-              required
+              onBlur={handleBlur}
             />
 
-            {errors.contexto?._errors?.[0] && (
+            {touched.contexto && errors.contexto && (
 
               <p className="text-red-400 text-sm mt-1">
                 {
                   errors.contexto
-                    ._errors[0]
                 }
               </p>
 

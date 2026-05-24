@@ -5,7 +5,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfile } from "@/services/auth.service";
 import { toast } from "sonner";
-import { completeProfileSchema } from "@/validations/completeProfile.validations";
+import { completeProfileSchema } from "@/validations/complete.profile.validations";
 
 export default function CompleteProfileForm() {
   const [formData, setFormData] = useState({
