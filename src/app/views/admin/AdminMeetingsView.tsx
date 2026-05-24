@@ -19,7 +19,7 @@ type Meeting = {
 
   status: string;
 
-  link: string;
+  meetLink: string;
 
   trainingRequest?: {
     id: string;
