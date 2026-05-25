@@ -292,7 +292,7 @@ export default function RequestDetailView({ id }: { id: string }) {
                 </h2>
 
                 <p className="text-sm text-gray-400 mt-2">
-                  Revisá los archivos enviados por el cliente.
+                  Revisá los archivos enviados para el cliente.
                 </p>
               </div>
 
