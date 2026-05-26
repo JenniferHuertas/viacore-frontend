@@ -17,61 +17,49 @@ export default function CompleteProfileForm() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-
   const [loading, setLoading] = useState(false);
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-
     const updatedValues = {
       ...formData,
       [name]: value,
     };
-
     setFormData(updatedValues);
-
     const result = completeProfileSchema.safeParse(updatedValues);
-
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
         fieldErrors[field] = issue.message;
       });
-
       setErrors(fieldErrors);
     } else {
-      setErrors({});
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[name];
+        return copy;
+      });
     }
   };
-
   const handleBlur = (
     e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
   };
-
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-
     const validation = completeProfileSchema.safeParse(formData);
-
     if (!validation.success) {
       toast.warning("Debes completar todos los campos");
       return;
     }
-
     try {
       setLoading(true);
-
       await completeProfile(formData);
-
       setFormData({
         phone: "",
         country: "",
@@ -79,13 +67,19 @@ export default function CompleteProfileForm() {
         city: "",
         address: "",
       });
-
       setErrors({});
       setTouched({});
-
       toast.success("Perfil completado correctamente");
-
-      window.location.href = "/";
+      const returnTo = sessionStorage.getItem("googleReturnTo") || "/";
+      sessionStorage.setItem("finalRedirect", returnTo);
+      setTimeout(() => {
+        window.location.href = returnTo;
+      }, 50);
+      if (returnTo) {
+        window.location.href = returnTo;
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       console.error(err);
       toast.error("Error al completar perfil");
