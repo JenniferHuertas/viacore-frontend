@@ -193,7 +193,7 @@ export default function PaymentsView() {
             onClick={
               handleSearch
             }
-            className="rounded bg-[#C7962D] px-4 py-2 font-semibold text-black"
+            className="rounded bg-[#C7962D] px-4 py-2 font-semibold text-black cursor-pointer"
           >
             Buscar
           </button>
@@ -325,7 +325,7 @@ export default function PaymentsView() {
                     currentPage ===
                     1
                   }
-                  className="rounded bg-white/5 px-4 py-2 text-sm text-white disabled:opacity-50"
+                  className="rounded bg-white/5 px-4 py-2 text-sm text-white disabled:opacity-50 cursor-pointer"
                 >
                   Anterior
                 </button>
@@ -341,7 +341,7 @@ export default function PaymentsView() {
                     currentPage ===
                     totalPages
                   }
-                  className="rounded bg-[#C7962D] px-4 py-2 text-sm text-white disabled:opacity-50"
+                  className="rounded bg-[#C7962D] px-4 py-2 text-sm text-white disabled:opacity-50 cursor-pointer"
                 >
                   Siguiente
                 </button>

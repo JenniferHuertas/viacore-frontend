@@ -288,7 +288,7 @@ export default function AdminMeetingsView() {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-xl border border-[#C7962D]/30 px-5 py-3 text-sm font-medium text-[#C7962D] transition hover:bg-[#C7962D]/10"
+                      className="rounded-xl border cursor-pointer border-[#C7962D]/30 px-5 py-3 text-sm font-medium text-[#C7962D] transition hover:bg-[#C7962D]/10"
                     >
                       Entrar a Meet
                     </a>
@@ -296,13 +296,13 @@ export default function AdminMeetingsView() {
                     {meeting.status !==
                       "CANCELLED" && (
 
-                      <button
+                      <button                      
                         onClick={() =>
                           handleCancel(
                             meeting.id,
                           )
                         }
-                        className="rounded-xl border border-red-500/30 px-5 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/10"
+                        className="rounded-xl border border-red-500/30 px-5 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/10 cursor-pointer"
                       >
                         Cancelar
                       </button>
