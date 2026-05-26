@@ -14,6 +14,7 @@ export default function GoogleButton({ mode }: GoogleButtonProps) {
     if (returnTo) {
       sessionStorage.setItem("googleReturnTo", returnTo);
     }
+    sessionStorage.setItem("googleMode", mode);
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google/${mode}`;
   };
 

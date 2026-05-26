@@ -71,7 +71,10 @@ export default function CompleteProfileForm() {
       setTouched({});
       toast.success("Perfil completado correctamente");
       const returnTo = sessionStorage.getItem("googleReturnTo") || "/";
-      sessionStorage.removeItem("googleReturnTo");
+      sessionStorage.setItem("finalRedirect", returnTo);
+      setTimeout(() => {
+        window.location.href = returnTo;
+      }, 50);
       if (returnTo) {
         window.location.href = returnTo;
       } else {

@@ -41,12 +41,14 @@ export default function Navbar() {
               <Link href="/plataforma" className="hover:text-white transition">
                 Plataforma
               </Link>
-              <Link
-                href="/mis-solicitudes"
-                className="hover:text-white transition"
-              >
-                Mis solicitudes
-              </Link>
+              {isAuthenticated && (
+                <Link
+                  href="/mis-solicitudes"
+                  className="hover:text-white transition"
+                >
+                  Mis solicitudes
+                </Link>
+              )}
               <Link href="/contacto" className="hover:text-white transition">
                 Contacto
               </Link>
@@ -118,13 +120,14 @@ export default function Navbar() {
           >
             Plataforma
           </Link>
-          <Link
-            href="/mis-solicitudes"
-            onClick={() => setOpen(false)}
-            className="hover:text-white transition"
-          >
-            Mis solicitudes
-          </Link>
+          {isAuthenticated && (
+            <Link
+              href="/mis-solicitudes"
+              className="hover:text-white transition"
+            >
+              Mis solicitudes
+            </Link>
+          )}
           <Link
             href="/contacto"
             onClick={() => setOpen(false)}

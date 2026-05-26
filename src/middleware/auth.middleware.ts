@@ -11,6 +11,7 @@ import {
 export function authMiddleware(
   request: NextRequest,
 ) {
+  console.log("AUTH MIDDLEWARE:", request.nextUrl.pathname);
   const { pathname } =
     request.nextUrl;
 

@@ -29,6 +29,7 @@ type UserContextType = {
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+
 export function UserProvider({
   children,
 }: {
@@ -37,6 +38,7 @@ export function UserProvider({
   const [user, setUser] = useState<User | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const router = useRouter();
+
   const refreshUser = async (): Promise<User | null> => {
     try {
       const profile = await api("/auth/profile", {
@@ -46,6 +48,7 @@ export function UserProvider({
         },
         credentials: "include",
       });
+
       setUser(profile);
       return profile;
     } catch (error: any) {
@@ -53,11 +56,13 @@ export function UserProvider({
         setUser(null);
         return null;
       }
+
       console.error("ERROR REFRESH USER", {
         statusCode: error?.statusCode,
         message: error?.message,
         error,
       });
+
       return null;
     } finally {
       setIsHydrated(true);
@@ -70,21 +75,39 @@ export function UserProvider({
 
   useEffect(() => {
     if (!isHydrated || !user) return;
+
     const isAdmin = user.role === "Admin";
     const isProfileCompleted = user.profileCompleted;
     const currentPath = window.location.pathname;
-    const isOnboardingPage = currentPath.startsWith("/completar-perfil");
 
+    const isOnboardingPage =
+      currentPath.startsWith("/completar-perfil");
+    const isCompletingProfile =
+      currentPath === "/completar-perfil";
+
+    // =========================
     // BLOQUEO ONBOARDING
-    if (!isAdmin && !isProfileCompleted && !isOnboardingPage) {
-      toast.warning("Debes completar tu perfil para continuar.");
+    // =========================
+    if (
+      !isAdmin &&
+      !isProfileCompleted &&
+      !isOnboardingPage &&
+      !isCompletingProfile
+    ) {
+      toast.warning(
+        "Debes completar tu perfil para continuar.",
+      );
+
       router.replace("/completar-perfil");
       return;
     }
 
+    // =========================
     // EVITAR LOOP ONBOARDING
+    // =========================
     if (isProfileCompleted && isOnboardingPage) {
       router.replace("/");
+      return;
     }
   }, [user, isHydrated, router]);
 
