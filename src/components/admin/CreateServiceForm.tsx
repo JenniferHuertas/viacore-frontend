@@ -211,7 +211,7 @@ export default function CreateServiceForm() {
 
       <div className="space-y-2">
         <Input
-          placeholder="Tagline"
+          placeholder="Eslogan"
           value={form.tagline}
           onChange={(e) => handleChange("tagline", e.target.value)}
           onBlur={() => handleBlur("tagline")}

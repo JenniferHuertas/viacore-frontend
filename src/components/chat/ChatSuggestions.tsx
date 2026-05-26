@@ -36,6 +36,7 @@ export default function ChatSuggestions({
               hover:border-[#C7962D]/40
               hover:bg-[#C7962D]/10
               hover:text-white
+              cursor-pointer
             "
           >
             {suggestion}

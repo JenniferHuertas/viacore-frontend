@@ -295,6 +295,7 @@ export default function ChatWidget() {
           text-black
           shadow-[0_0_35px_rgba(199,150,45,0.35)]
           transition-all
+          cursor-pointer
         "
       >
 
@@ -350,6 +351,7 @@ export default function ChatWidget() {
               max-sm:h-screen
               max-sm:w-full
               max-sm:rounded-none
+              cursor-pointer
             "
           >
 

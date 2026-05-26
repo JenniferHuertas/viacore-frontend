@@ -134,23 +134,23 @@ export default function EditServiceView({ id }: Props) {
   }, [id]);
 
   const validateSingleField = (
-  field: keyof ServiceFormValues,
-  values: ServiceFormValues
-) => {
-  const result = serviceSchema.safeParse(values);
+    field: keyof ServiceFormValues,
+    values: ServiceFormValues,
+  ) => {
+    const result = serviceSchema.safeParse(values);
 
-  if (result.success) {
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-    return;
-  }
+    if (result.success) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+      return;
+    }
 
-  const formatted = result.error.format();
+    const formatted = result.error.format();
 
-  setErrors((prev) => ({
-    ...prev,
-    [field]: formatted[field]?._errors?.[0] ?? "",
-  }));
-};
+    setErrors((prev) => ({
+      ...prev,
+      [field]: formatted[field]?._errors?.[0] ?? "",
+    }));
+  };
 
   const handleAddInclude = () => {
     if (!includeInput.trim()) {
@@ -170,7 +170,7 @@ export default function EditServiceView({ id }: Props) {
     const updatedIncludes = includes.filter((_, i) => i !== index);
 
     setIncludes(updatedIncludes);
-  }
+  };
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -180,14 +180,14 @@ export default function EditServiceView({ id }: Props) {
     const validation = serviceSchema.safeParse(values);
 
     if (!validation.success) {
-  const fieldErrors = getFieldErrors(values);
+      const fieldErrors = getFieldErrors(values);
 
-  setErrors(fieldErrors);
+      setErrors(fieldErrors);
 
-  toast.warning("Debes completar todos los campos");
+      toast.warning("Debes completar todos los campos");
 
-  return;
-}
+      return;
+    }
 
     try {
       setSaving(true);
@@ -261,15 +261,13 @@ export default function EditServiceView({ id }: Props) {
           <div className="space-y-2">
             <label className="text-sm text-gray-300">Título</label>
 
-        <input
-        type="text"
-  value={title}
-  onChange={(e) => setTitle(e.target.value)}
-  onBlur={() =>
-    validateSingleField("title", getCurrentValues())
-  }
-  className={inputClass("title")}
-/>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => validateSingleField("title", getCurrentValues())}
+              className={inputClass("title")}
+            />
 
             {errors.title && (
               <p className="text-sm text-red-400">{errors.title}</p>
@@ -282,10 +280,10 @@ export default function EditServiceView({ id }: Props) {
             <input
               type="text"
               value={shortDescription}
-       onChange={(e) => setShortDescription(e.target.value)}
-  onBlur={() =>
-    validateSingleField("shortDescription", getCurrentValues())
-  }
+              onChange={(e) => setShortDescription(e.target.value)}
+              onBlur={() =>
+                validateSingleField("shortDescription", getCurrentValues())
+              }
               className={inputClass("shortDescription")}
             />
 
@@ -299,10 +297,10 @@ export default function EditServiceView({ id }: Props) {
 
             <textarea
               value={description}
-        onChange={(e) => setDescription(e.target.value)}
-  onBlur={() =>
-    validateSingleField("description", getCurrentValues())
-  }
+              onChange={(e) => setDescription(e.target.value)}
+              onBlur={() =>
+                validateSingleField("description", getCurrentValues())
+              }
               className={`${inputClass("description")} min-h-35`}
             />
 
@@ -312,15 +310,13 @@ export default function EditServiceView({ id }: Props) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-300">Tagline</label>
+            <label className="text-sm text-gray-300">Eslogan</label>
 
             <input
               type="text"
               value={tagline}
-         onChange={(e) => setTagline(e.target.value)}
-  onBlur={() =>
-    validateSingleField("tagline", getCurrentValues())
-  }
+              onChange={(e) => setTagline(e.target.value)}
+              onBlur={() => validateSingleField("tagline", getCurrentValues())}
               className={inputClass("tagline")}
             />
 
@@ -335,10 +331,8 @@ export default function EditServiceView({ id }: Props) {
             <input
               type="text"
               value={category}
-          onChange={(e) => setCategory(e.target.value)}
-  onBlur={() =>
-    validateSingleField("category", getCurrentValues())
-  }
+              onChange={(e) => setCategory(e.target.value)}
+              onBlur={() => validateSingleField("category", getCurrentValues())}
               className={inputClass("category")}
             />
 
@@ -348,20 +342,21 @@ export default function EditServiceView({ id }: Props) {
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm text-gray-300">Includes</label>
+            <label className="text-sm text-gray-300">Incluye</label>
 
             <div className="flex gap-2">
               <input
                 type="text"
                 value={includeInput}
                 onChange={(e) => {
-  const value = e.target.value;
-  setIncludeInput(value);
+                  const value = e.target.value;
+                  setIncludeInput(value);
 
-  if (errors.includeInput) {
-    setErrors((prev) => ({ ...prev, includeInput: "" }));
-  }
-}}
+                  if (errors.includeInput) {
+                    setErrors((prev) => ({ ...prev, includeInput: "" }));
+                  }
+                }}
+                className={inputClass("includeInput")}
               />
 
               <button
@@ -407,7 +402,6 @@ export default function EditServiceView({ id }: Props) {
                 const selectedFile = e.target.files?.[0] ?? null;
 
                 setFile(selectedFile);
-
               }}
               className={inputClass("file")}
             />
