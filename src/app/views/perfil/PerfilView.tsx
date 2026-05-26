@@ -181,13 +181,28 @@ export default function PerfilView() {
                 {email?.charAt(0).toUpperCase()}
               </div>
 
-              <div>
+              <div className="min-w-0">
 
-                <h2 className="text-2xl font-semibold text-white">
+                <h2  
+          className="
+          text-lg
+          sm:text-2xl
+          font-semibold
+          text-white
+          break-words
+          leading-tight
+        ">
                   {email}
                 </h2>
 
-                <p className="text-sm text-gray-400 mt-1">
+                     <p
+        className="
+          text-sm
+          text-gray-400
+          mt-1
+          break-words
+        "
+      >
                   Cuenta empresarial ViaCore
                 </p>
 
@@ -231,7 +246,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     Tu nombre
                   </label>
 
@@ -254,7 +269,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     Número telefónico
                   </label>
 
@@ -278,7 +293,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     País
                   </label>
 
@@ -348,7 +363,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     Ciudad
                   </label>
 
@@ -384,7 +399,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     Empresa
                   </label>
 
@@ -408,7 +423,7 @@ export default function PerfilView() {
 
                 <div>
 
-                  <label className="text-sm text-grey">
+                  <label className="text-sm text-white">
                     Dirección
                   </label>
 

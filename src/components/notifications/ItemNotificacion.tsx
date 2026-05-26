@@ -29,7 +29,7 @@ export default function ItemNotificacion({
         notification.isRead
           ? "border-white/5 bg-black/20"
           : "border-[#C7962D]/30 bg-[#C7962D]/10"
-      }`}
+      } cursor-pointer`}
     >
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium text-white">
