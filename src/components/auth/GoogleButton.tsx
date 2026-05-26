@@ -1,22 +1,25 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 type GoogleButtonProps = {
   mode: "signin" | "signup";
 };
-
-export default function GoogleButton({
-  mode,
-}: GoogleButtonProps) {
+export default function GoogleButton({ mode }: GoogleButtonProps) {
+  const searchParams = useSearchParams();
 
   const handleGoogleLogin = () => {
-
-    window.location.href =
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/google?mode=${mode}`;
+    const returnTo = searchParams.get("returnTo");
+    const url = new URL(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/google/${mode}`,
+    );
+    if (returnTo) {
+      url.searchParams.set("returnTo", returnTo);
+    }
+    window.location.href = url.toString();
   };
-
   return (
     <div className="flex justify-center items-center">
-
       <button
         type="button"
         onClick={handleGoogleLogin}
@@ -42,19 +45,13 @@ export default function GoogleButton({
           hover:shadow-[0_0_20px_rgba(199,150,45,0.15)]
         "
       >
-
         <img
           src="https://www.svgrepo.com/show/475656/google-color.svg"
           alt="Google"
           className="w-5 h-5"
         />
-
-        <span>
-          Continuar con Google
-        </span>
-
+        <span>Continuar con Google</span>
       </button>
-
     </div>
   );
 }

@@ -46,7 +46,11 @@ export default function CompleteProfileForm() {
 
       setErrors(fieldErrors);
     } else {
-      setErrors({});
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[name];
+        return copy;
+      });
     }
   };
 
