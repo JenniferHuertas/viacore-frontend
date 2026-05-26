@@ -458,7 +458,7 @@ export default function SolicitudDetalleView({
                       href={latestMeeting.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90"
+                      className="inline-flex items-center justify-center rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
                     >
                       Unirse a la reunión
                     </a>
@@ -469,7 +469,7 @@ export default function SolicitudDetalleView({
                           !showReschedule,
                         )
                       }
-                      className="rounded-xl border border-white/10 px-6 py-3 text-white hover:bg-white/5 transition"
+                      className="rounded-xl border border-white/10 px-6 py-3 text-white hover:bg-white/5 transition cursor-pointer"
                     >
                       Reprogramar
                     </button>
@@ -568,7 +568,7 @@ export default function SolicitudDetalleView({
                           );
                         }
                       }}
-                      className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90"
+                      className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
                     >
                       {savingReschedule
                         ? "Guardando..."
@@ -655,7 +655,7 @@ export default function SolicitudDetalleView({
                               url,
                             );
                           }}
-                          className="rounded-lg border border-[#C7962D]/30 px-4 py-2 text-sm text-[#C7962D] hover:bg-[#C7962D]/10 transition"
+                          className="rounded-lg border border-[#C7962D]/30 px-4 py-2 text-sm text-[#C7962D] hover:bg-[#C7962D]/10 transition cursor-pointer"
                         >
                           Descargar
                         </button>
