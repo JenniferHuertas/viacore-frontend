@@ -97,6 +97,7 @@ export default function ChatInput({
             hover:brightness-110
             disabled:cursor-not-allowed
             disabled:opacity-40
+            cursor-pointer
           "
         >
 
