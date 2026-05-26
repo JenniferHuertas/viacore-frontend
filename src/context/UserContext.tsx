@@ -8,9 +8,7 @@ import {
 } from "react";
 
 import { useRouter } from "next/navigation";
-
 import { toast } from "sonner";
-
 import { api } from "@/services/api";
 
 export type User = {
@@ -22,209 +20,102 @@ export type User = {
 
 type UserContextType = {
   user: User | null;
-
   isAuthenticated: boolean;
-
   isProfileCompleted: boolean;
-
   isHydrated: boolean;
-
   login: () => Promise<void>;
-
   logout: () => Promise<void>;
-
   refreshUser: () => Promise<User | null>;
 };
 
-const UserContext =
-  createContext<UserContextType | undefined>(
-    undefined,
-  );
-
+const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
-  const [user, setUser] =
-    useState<User | null>(null);
-
-  const [isHydrated, setIsHydrated] =
-    useState(false);
-
-  const router =
-    useRouter();
-
-  const refreshUser =
-    async (): Promise<User | null> => {
-
-      try {
-
-        const profile =
-          await api(
-            "/auth/profile",
-            {
-              method: "GET",
-
-              headers: {
-                "Cache-Control":
-                  "no-cache",
-              },
-            },
-          );
-
-        setUser(profile);
-
-        return profile;
-
-      } catch (error: any) {
-
-        if (
-          error?.statusCode === 401
-        ) {
-
-          setUser(null);
-
-          return null;
-        }
-
-        console.error(
-          "ERROR REFRESH USER",
-          {
-            statusCode:
-              error?.statusCode,
-
-            message:
-              error?.message,
-
-            error,
-          },
-        );
-
+  const [user, setUser] = useState<User | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const router = useRouter();
+  const refreshUser = async (): Promise<User | null> => {
+    try {
+      const profile = await api("/auth/profile", {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+        credentials: "include",
+      });
+      setUser(profile);
+      return profile;
+    } catch (error: any) {
+      if (error?.statusCode === 401) {
+        setUser(null);
         return null;
-
-      } finally {
-
-        setIsHydrated(true);
       }
-    };
+      console.error("ERROR REFRESH USER", {
+        statusCode: error?.statusCode,
+        message: error?.message,
+        error,
+      });
+      return null;
+    } finally {
+      setIsHydrated(true);
+    }
+  };
 
   useEffect(() => {
-
     refreshUser();
-
   }, []);
 
   useEffect(() => {
+    if (!isHydrated || !user) return;
+    const isAdmin = user.role === "Admin";
+    const isProfileCompleted = user.profileCompleted;
+    const currentPath = window.location.pathname;
+    const isOnboardingPage = currentPath.startsWith("/completar-perfil");
 
-    if (
-      !isHydrated ||
-      !user
-    ) {
-
+    // BLOQUEO ONBOARDING
+    if (!isAdmin && !isProfileCompleted && !isOnboardingPage) {
+      toast.warning("Debes completar tu perfil para continuar.");
+      router.replace("/completar-perfil");
       return;
     }
 
-    const isAdmin =
-      user.role === "Admin";
-
-    const isProfileCompleted =
-      user.profileCompleted;
-
-    const currentPath =
-      window.location.pathname;
-
-    const isOnboardingPage =
-      currentPath.startsWith(
-        "/completar-perfil",
-      );
-
-    // BLOQUEO VISUAL ONBOARDING
-
-    if (
-      !isAdmin &&
-      !isProfileCompleted &&
-      !isOnboardingPage
-    ) {
-
-      toast.warning(
-        "Debes completar tu perfil para continuar.",
-      );
-
-      router.replace(
-        "/completar-perfil",
-      );
-    }
-
-    // EVITAR VOLVER AL ONBOARDING
-
-    if (
-      isProfileCompleted &&
-      isOnboardingPage
-    ) {
-
+    // EVITAR LOOP ONBOARDING
+    if (isProfileCompleted && isOnboardingPage) {
       router.replace("/");
     }
+  }, [user, isHydrated, router]);
 
-  }, [
-    user,
-    isHydrated,
-    router,
-  ]);
+  const login = async () => {
+    await refreshUser();
+  };
 
-  const login =
-    async () => {
-
-      await refreshUser();
-
-    };
-
-  const logout =
-    async () => {
-
-      try {
-
-        await api(
-          "/auth/logout",
-          {
-            method: "POST",
-          },
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-      } finally {
-
-        setUser(null);
-
-        router.push("/");
-
-        toast.success(
-          "Sesión cerrada exitosamente",
-        );
-      }
-    };
+  const logout = async () => {
+    try {
+      await api("/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUser(null);
+      router.push("/");
+      toast.success("Sesión cerrada exitosamente");
+    }
+  };
 
   return (
     <UserContext.Provider
       value={{
         user,
-
-        isAuthenticated:
-          !!user,
-
-        isProfileCompleted:
-          !!user?.profileCompleted,
-
+        isAuthenticated: !!user,
+        isProfileCompleted: !!user?.profileCompleted,
         isHydrated,
-
         login,
-
         logout,
-
         refreshUser,
       }}
     >
@@ -234,14 +125,9 @@ export function UserProvider({
 }
 
 export function useUserContext() {
-
-  const context =
-    useContext(
-      UserContext,
-    );
+  const context = useContext(UserContext);
 
   if (!context) {
-
     throw new Error(
       "useUserContext debe usarse dentro de UserProvider",
     );

@@ -18,17 +18,17 @@ export const completeProfileSchema = z
       .string()
       .min(1, "La dirección es obligatoria")
       .min(2, "La dirección debe tener al menos 2 caracteres")
-      .max(120, "La dirección no puede tener más de 120 caracteres"),
+      .max(500, "La dirección no puede tener más de 120 caracteres"),
 
     city: z
       .string()
       .min(1, "La ciudad es obligatoria")
       .min(2, "La ciudad debe tener al menos 2 caracteres")
-      .max(120, "La ciudad no puede tener más de caracteres"),
+      .max(500, "La ciudad no puede tener más de caracteres"),
 
     companyName: z
       .string()
       .min(1, "La empresa es obligatoria")
       .min(2, "La empresa debe tener al menos 2 caracteres")
-      .max(120, "La ciudad no puede tener más de caracteres"),
+      .max(500, "La ciudad no puede tener más de caracteres"),
   })
