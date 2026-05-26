@@ -231,6 +231,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-grey">
+                    Tu nombre
+                  </label>
+
                   <Input
                     placeholder="Nombre"
                     {...register(
@@ -249,6 +253,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-grey">
+                    Número telefónico
+                  </label>
 
                   <Input
                     placeholder="Teléfono"
@@ -269,6 +277,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-grey">
+                    País
+                  </label>
 
                   <select
                     {...register(
@@ -336,6 +348,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-grey">
+                    Ciudad
+                  </label>
+
                   <Input
                     placeholder="Ciudad"
                     {...register(
@@ -368,6 +384,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-grey">
+                    Empresa
+                  </label>
+
                   <Input
                     placeholder="Empresa"
                     {...register(
@@ -387,6 +407,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-grey">
+                    Dirección
+                  </label>
 
                   <Input
                     placeholder="Dirección"
