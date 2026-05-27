@@ -13,33 +13,30 @@ type SendMessagePayload = {
   message: string;
   sessionId: string;
   trainingRequestId?: string;
-  userId?: string; // Lo mantenemos aquí para que tu componente de React no proteste
+  userId?: string;
 };
 
 export const sendMessage = async (
   payload: SendMessagePayload,
 ): Promise<ChatMessage> => {
-
-  // FILTRADO TOTAL: Eliminamos "userId" por completo y limpiamos datos vacíos
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(
-      ([key, value]) => 
-        key !== "userId" && // <--- ¡EL ESCUDO!: Si viene el userId, lo deséchamos aquí mismo
-        value !== undefined && 
-        value !== null && 
-        value !== "" && 
+      ([key, value]) =>
+        key !== "userId" &&
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
         value !== "undefined"
     )
   );
 
-  // PETICIÓN NATIVA SEGURA
-  const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}/chat, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(cleanPayload), // Enviamos los datos purificados sin el intruso
-    credentials: "include", // Permite que viaje la cookie para que el backend te reconozca
+    body: JSON.stringify(cleanPayload),
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -52,9 +49,8 @@ export const sendMessage = async (
 export const getChatHistory = async (
   identifier: string,
 ): Promise<ChatMessage[]> => {
-
   return await api(
-    /chat/history/${identifier},
+    `/chat/history/${identifier}`,
     {
       method: "GET",
     },
