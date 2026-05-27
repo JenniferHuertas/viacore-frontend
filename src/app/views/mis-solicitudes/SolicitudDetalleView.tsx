@@ -1,20 +1,20 @@
 "use client";
-
 import Link from "next/link";
-
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
-
 import { getTrainingRequestById } from "@/services/trainingRequests.service";
-
 import { rescheduleMeeting } from "@/services/meetings.service";
-
+import { rescheduleSchema } from "@/validations/reschedule.meeting.validation";
 import { useChatContext } from "@/context/ChatContext";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type SolicitudDetalleViewProps = {
   id: string;
 };
+
+type FormData = z.infer<typeof rescheduleSchema>;
 
 export default function SolicitudDetalleView({
   id,
@@ -25,13 +25,17 @@ export default function SolicitudDetalleView({
 
   const [showReschedule, setShowReschedule] = useState(false);
 
-  const [newDate, setNewDate] = useState("");
-
-  const [newTime, setNewTime] = useState("");
-
   const [savingReschedule, setSavingReschedule] = useState(false);
 
   const { setTrainingRequestId } = useChatContext();
+
+  const {
+  register,
+  handleSubmit,
+  formState: { errors },
+} = useForm<FormData>({
+  resolver: zodResolver(rescheduleSchema),
+});
 
   useEffect(() => {
     setTrainingRequestId(id);
@@ -352,59 +356,68 @@ export default function SolicitudDetalleView({
                     </h3>
 
                     <input
-                      type="date"
-                      value={newDate}
-                      onChange={(e) => setNewDate(e.target.value)}
-                      className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
-                    />
+  type="date"
+  {...register("date")}
+  min={new Date().toISOString().split("T")[0]}
+  className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
+/>
 
-                    <input
-                      type="time"
-                      step="1800"
-                      value={newTime}
-                      onChange={(e) => setNewTime(e.target.value)}
-                      className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
-                    />
+{errors.date && (
+  <p className="text-red-500 text-sm">
+    {errors.date.message}
+  </p>
+)}
 
-                    <button
-                      disabled={savingReschedule}
-                      onClick={async () => {
-                        try {
-                          setSavingReschedule(true);
+<input
+  type="time"
+  step="1800"
+  min="09:00"
+  max="18:00"
+  {...register("time")}
+  className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
+/>
 
-                          const newStartTime = `${newDate}T${newTime}:00`;
+{errors.time && (
+  <p className="text-red-500 text-sm">
+    {errors.time.message}
+  </p>
+)}
 
-                          await rescheduleMeeting(
-                            latestMeeting.id,
-                            newStartTime,
-                          );
+  <button
+  disabled={savingReschedule}
+  onClick={handleSubmit(async (data) => {
+    try {
+      setSavingReschedule(true);
 
-                          const updated = await getTrainingRequestById(id);
+      const newStartTime = `${data.date}T${data.time}:00`;
 
-                          setSolicitud(updated);
+      await rescheduleMeeting(
+        latestMeeting.id,
+        newStartTime,
+      );
 
-                          setShowReschedule(false);
+      const updated = await getTrainingRequestById(id);
 
-                          setNewDate("");
+      setSolicitud(updated);
 
-                          setNewTime("");
+      setShowReschedule(false);
 
-                          toast.success("Reunión reprogramada correctamente");
-                        } catch (error: any) {
-                          console.error(error);
+      toast.success("Reunión reprogramada correctamente");
+    } catch (error: any) {
+      console.error(error);
 
-                          toast.error(
-                            error?.message ||
-                              "No se pudo reprogramar la reunión",
-                          );
-                        } finally {
-                          setSavingReschedule(false);
-                        }
-                      }}
-                      className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
-                    >
-                      {savingReschedule ? "Guardando..." : "Guardar cambios"}
-                    </button>
+      toast.error(
+        error?.message ||
+          "No se pudo reprogramar la reunión",
+      );
+    } finally {
+      setSavingReschedule(false);
+    }
+  })}
+  className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
+>
+  {savingReschedule ? "Guardando..." : "Guardar cambios"}
+</button>
                   </div>
                 )}
               </div>
