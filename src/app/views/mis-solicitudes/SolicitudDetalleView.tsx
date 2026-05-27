@@ -374,9 +374,11 @@ export default function SolicitudDetalleView({
 
                           const newStartTime = `${newDate}T${newTime}:00`;
 
+
                           await rescheduleMeeting(
                             latestMeeting.id,
-                            newStartTime,
+                            newDate,
+                            newTime,
                           );
 
                           const updated = await getTrainingRequestById(id);

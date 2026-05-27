@@ -19,14 +19,13 @@ type SendMessagePayload = {
 export const sendMessage = async (
   payload: SendMessagePayload,
 ): Promise<ChatMessage> => {
-  
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(
-      ([key, value]) => 
-        key !== "userId" && 
-        value !== undefined && 
-        value !== null && 
-        value !== "" && 
+      ([key, value]) =>
+        key !== "userId" &&
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
         value !== "undefined"
     )
   );
@@ -36,8 +35,8 @@ export const sendMessage = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(cleanPayload), 
-    credentials: "include", 
+    body: JSON.stringify(cleanPayload),
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -50,7 +49,6 @@ export const sendMessage = async (
 export const getChatHistory = async (
   identifier: string,
 ): Promise<ChatMessage[]> => {
-
   return await api(
     `/chat/history/${identifier}`,
     {
