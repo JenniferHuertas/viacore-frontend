@@ -1,175 +1,100 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-} from "react";
-
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-
+import { useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-
 import { useUserContext } from "@/context/UserContext";
 
 export default function AutenticacionGoogleView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { refreshUser } = useUserContext();
 
-  const router =
-    useRouter();
-
-  const searchParams =
-    useSearchParams();
-
-  const {
-    refreshUser,
-  } = useUserContext();
-
-  const executed =
-    useRef(false);
+  const executed = useRef(false);
 
   useEffect(() => {
-
-    if (executed.current) {
-      return;
-    }
-
+    if (executed.current) return;
     executed.current = true;
 
-    const error =
-      searchParams.get("error");
+    const error = searchParams.get("error");
 
-    // ERRORES OAUTH
-
+    // =========================
+    // ERROR OAUTH REAL
+    // =========================
     if (error) {
-
-      if (
-        error ===
-        "google_manual_conflict"
-      ) {
-
-        toast.error(
-          "Este correo ya fue registrado con email y contraseña.",
-        );
-
-      } else if (
-        error ===
-        "google_not_registered"
-      ) {
-
-        toast.error(
-          "Todavía no tenés una cuenta creada con Google. Registrate primero.",
-        );
-
-      } else if (
-        error ===
-        "google_already_exists"
-      ) {
-
-        toast.error(
-          "Ya existe una cuenta registrada con Google para este correo. Inicia sesión.",
-        );
-
-      } else if (
-        error ===
-        "google_auth_failed"
-      ) {
-
-        // ESTE ERA EL TOAST
-        // QUE TE SEGUÍA APARECIENDO
-
-        toast.error(
-          "No existe una cuenta Google registrada con este correo.",
-        );
-
-      } else if (
-        error ===
-        "google_token_missing"
-      ) {
-
-        toast.error(
-          "No pudimos generar la sesión con Google.",
-        );
-
-      } else {
-
-        toast.error(
-          "Ocurrió un error durante el inicio de sesión con Google.",
-        );
-      }
-
-      setTimeout(() => {
-
-        router.replace(
-          "/autenticacion",
-        );
-
-      }, 100);
-
+      toast.error("Error en autenticación con Google");
+      router.replace("/autenticacion");
       return;
     }
 
-    const init =
-      async () => {
+    const init = async () => {
+      try {
+        await new Promise((res) => setTimeout(res, 150));
 
-        try {
+        const profile = await refreshUser();
 
-          const profile =
-            await refreshUser();
+        // =========================
+        // MODE (signin / signup)
+        // =========================
+        const mode =
+          sessionStorage.getItem("googleMode") ||
+          searchParams.get("state") ||
+          "signin";
 
-          if (!profile) {
+        // =========================
+        // RETURN ROUTE
+        // =========================
+        const returnTo =
+          sessionStorage.getItem("googleReturnTo") || "/";
 
-            toast.error(
-              "No existe una cuenta Google registrada con este correo.",
-            );
+        // limpiar storage base
+        sessionStorage.removeItem("googleMode");
+        sessionStorage.removeItem("googleReturnTo");
 
-            router.replace(
-              "/autenticacion",
-            );
-
-            return;
+        // =========================
+        // ERROR DE USUARIO
+        // =========================
+        if (!profile) {
+          if (mode === "signup") {
+            toast.error("Este correo ya existe, inicia sesión");
+          } else {
+            toast.error("No existe una cuenta con este correo");
           }
 
-          toast.success(
-            "Login con Google exitoso",
-          );
-
-          // ONBOARDING OBLIGATORIO
-
-          if (
-            !profile.profileCompleted &&
-            profile.role !== "Admin"
-          ) {
-
-            router.replace(
-              "/completar-perfil",
-            );
-
-            return;
-          }
-
-          router.replace("/");
-
-        } catch {
-
-          toast.error(
-            "No existe una cuenta Google registrada con este correo.",
-          );
-
-          router.replace(
-            "/autenticacion",
-          );
+          router.replace("/autenticacion");
+          return;
         }
-      };
+
+        // =========================
+        // ONBOARDING (COMPLETAR PERFIL)
+        // =========================
+        if (!profile.profileCompleted && profile.role !== "Admin") {
+          // 🔥 IMPORTANTE: no crear nuevas keys raras
+          sessionStorage.setItem("googleReturnTo", returnTo);
+
+          router.replace("/completar-perfil");
+          return;
+        }
+
+        // =========================
+        // LOGIN EXITOSO
+        // =========================
+        toast.success(
+          mode === "signup"
+            ? "Cuenta creada e inicio de sesión exitoso"
+            : "Inicio de sesión exitoso"
+        );
+
+        router.replace(returnTo);
+      } catch (err) {
+        console.error(err);
+        toast.error("Error en login con Google");
+        router.replace("/autenticacion");
+      }
+    };
 
     init();
-
-  }, [
-    router,
-    refreshUser,
-    searchParams,
-  ]);
+  }, [router, refreshUser, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white">

@@ -181,13 +181,28 @@ export default function PerfilView() {
                 {email?.charAt(0).toUpperCase()}
               </div>
 
-              <div>
+              <div className="min-w-0">
 
-                <h2 className="text-2xl font-semibold text-white">
+                <h2  
+          className="
+          text-lg
+          sm:text-2xl
+          font-semibold
+          text-white
+          break-words
+          leading-tight
+        ">
                   {email}
                 </h2>
 
-                <p className="text-sm text-gray-400 mt-1">
+                     <p
+        className="
+          text-sm
+          text-gray-400
+          mt-1
+          break-words
+        "
+      >
                   Cuenta empresarial ViaCore
                 </p>
 
@@ -231,6 +246,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Tu nombre
+                  </label>
+
                   <Input
                     placeholder="Nombre"
                     {...register(
@@ -249,6 +268,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    Número telefónico
+                  </label>
 
                   <Input
                     placeholder="Teléfono"
@@ -269,6 +292,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    País
+                  </label>
 
                   <select
                     {...register(
@@ -336,6 +363,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Ciudad
+                  </label>
+
                   <Input
                     placeholder="Ciudad"
                     {...register(
@@ -368,6 +399,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Empresa
+                  </label>
+
                   <Input
                     placeholder="Empresa"
                     {...register(
@@ -387,6 +422,10 @@ export default function PerfilView() {
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    Dirección
+                  </label>
 
                   <Input
                     placeholder="Dirección"
