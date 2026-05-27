@@ -7,9 +7,13 @@ export const getMeetings = async () => {
 };
 
 export const getAvailability = async (date: string) => {
-  return await api(`/meetings/availability?date=${date}`, {
-    method: "GET",
-  });
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return await api(
+    `/meetings/availability?date=${date}&timezone=${encodeURIComponent(timezone)}`,
+    {
+      method: "GET",
+    },
+  );
 };
 
 export const createMeeting = async (meetingData: {
