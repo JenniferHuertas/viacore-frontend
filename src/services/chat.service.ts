@@ -19,7 +19,7 @@ type SendMessagePayload = {
 export const sendMessage = async (
   payload: SendMessagePayload,
 ): Promise<ChatMessage> => {
-  
+
   // FILTRADO TOTAL: Eliminamos "userId" por completo y limpiamos datos vacíos
   const cleanPayload = Object.fromEntries(
     Object.entries(payload).filter(
@@ -33,7 +33,7 @@ export const sendMessage = async (
   );
 
   // PETICIÓN NATIVA SEGURA
-  const response = await fetch("http://localhost:8000/chat", {
+  const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}/chat, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export const getChatHistory = async (
 ): Promise<ChatMessage[]> => {
 
   return await api(
-    `/chat/history/${identifier}`,
+    /chat/history/${identifier},
     {
       method: "GET",
     },
