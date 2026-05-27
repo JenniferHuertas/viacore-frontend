@@ -37,11 +37,17 @@ export const cancelMeeting = async (id: string) => {
   });
 };
 
-export const rescheduleMeeting = async (id: string, newStartTime: string) => {
+export const rescheduleMeeting = async (
+  id: string,
+  date: string,
+  time: string,
+) => {
   return await api(`/meetings/${id}/reschedule`, {
     method: "PATCH",
     body: JSON.stringify({
-      newStartTime,
+      date,
+      time,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
 };
