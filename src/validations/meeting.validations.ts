@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const esDiaHabil = (dateStr: string) => {
   const date = new Date(dateStr);
-  const day = date.getDay(); // 0 Sun - 6 Sat
+  const day = date.getDay(); 
   return day >= 1 && day <= 5;
 };
 
@@ -18,5 +18,5 @@ export const meetingSchema = z.object({
 
   horario: z
     .string()
-    .refine(esHorarioLaboral, "Horario permitido: 09:00 - 17:00"),
+    .refine(esHorarioLaboral, "Horario permitido: 09:00 - 16:30"),
 });
