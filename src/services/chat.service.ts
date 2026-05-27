@@ -13,16 +13,40 @@ type SendMessagePayload = {
   message: string;
   sessionId: string;
   trainingRequestId?: string;
+  userId?: string; // Lo mantenemos aquí para que tu componente de React no proteste
 };
 
 export const sendMessage = async (
   payload: SendMessagePayload,
 ): Promise<ChatMessage> => {
+  
+  // FILTRADO TOTAL: Eliminamos "userId" por completo y limpiamos datos vacíos
+  const cleanPayload = Object.fromEntries(
+    Object.entries(payload).filter(
+      ([key, value]) => 
+        key !== "userId" && // <--- ¡EL ESCUDO!: Si viene el userId, lo deséchamos aquí mismo
+        value !== undefined && 
+        value !== null && 
+        value !== "" && 
+        value !== "undefined"
+    )
+  );
 
-  return await api("/chat", {
+  // PETICIÓN NATIVA SEGURA
+  const response = await fetch("http://localhost:8000/chat", {
     method: "POST",
-    body: JSON.stringify(payload),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(cleanPayload), // Enviamos los datos purificados sin el intruso
+    credentials: "include", // Permite que viaje la cookie para que el backend te reconozca
   });
+
+  if (!response.ok) {
+    throw new Error("No se pudo enviar el mensaje");
+  }
+
+  return response.json();
 };
 
 export const getChatHistory = async (
