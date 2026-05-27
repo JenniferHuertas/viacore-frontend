@@ -32,10 +32,14 @@ export default function SolicitudDetalleView({
   const {
   register,
   handleSubmit,
+  watch,
   formState: { errors },
 } = useForm<FormData>({
   resolver: zodResolver(rescheduleSchema),
 });
+
+const watchedDate = watch("date");
+const watchedTime = watch("time");
 
   useEffect(() => {
     setTrainingRequestId(id);
@@ -383,40 +387,56 @@ export default function SolicitudDetalleView({
   </p>
 )}
 
-  <button
+<button
   disabled={savingReschedule}
-  onClick={handleSubmit(async (data) => {
-    try {
-      setSavingReschedule(true);
+  onClick={() => {
+if (
+  !watch("date")?.trim() ||
+  !watch("time")?.trim()
+) {
+  toast.warning(
+    "Debes completar fecha y horario",
+  );
 
-      const newStartTime = `${data.date}T${data.time}:00`;
+  return;
+}
+
+    handleSubmit(async (data) => {
+      try {
+        setSavingReschedule(true);
 
       await rescheduleMeeting(
-        latestMeeting.id,
-        newStartTime,
-      );
+  latestMeeting.id,
+  data.date,
+  data.time,
+);
 
-      const updated = await getTrainingRequestById(id);
+        const updated = await getTrainingRequestById(id);
 
-      setSolicitud(updated);
+        setSolicitud(updated);
 
-      setShowReschedule(false);
+        setShowReschedule(false);
 
-      toast.success("Reunión reprogramada correctamente");
-    } catch (error: any) {
-      console.error(error);
+        toast.success(
+          "Reunión reprogramada correctamente",
+        );
+      } catch (error: any) {
+        console.error(error);
 
-      toast.error(
-        error?.message ||
-          "No se pudo reprogramar la reunión",
-      );
-    } finally {
-      setSavingReschedule(false);
-    }
-  })}
+        toast.error(
+          error?.message ||
+            "No se pudo reprogramar la reunión",
+        );
+      } finally {
+        setSavingReschedule(false);
+      }
+    })();
+  }}
   className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
 >
-  {savingReschedule ? "Guardando..." : "Guardar cambios"}
+  {savingReschedule
+    ? "Guardando..."
+    : "Guardar cambios"}
 </button>
                   </div>
                 )}
