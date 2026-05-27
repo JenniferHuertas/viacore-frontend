@@ -15,6 +15,8 @@ import {
 
 import { socket } from "@/lib/socket";
 
+import { createPortal } from "react-dom";
+
 type Request = {
   id: string;
 
@@ -51,6 +53,44 @@ const statusStyles = {
   awaiting_payment: "bg-orange-500/10 text-orange-400",
 };
 
+function ConfirmCancelModal({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-[#0B0D0F] border border-white/10 rounded-2xl p-8 w-full max-w-md mx-4 shadow-xl">
+        <h2 className="text-xl font-semibold text-white">
+          ¿Cancelar solicitud?
+        </h2>
+        <div className="h-0.5 w-10 bg-[#C7962D] mt-2 mb-4" />
+        <p className="text-gray-400 text-sm">
+          Esta acción no se puede deshacer. ¿Estás seguro de que querés cancelar
+          esta solicitud?
+        </p>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm rounded-lg border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition"
+          >
+            No, volver
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition"
+          >
+            Sí, cancelar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export default function RequestsView() {
   const [requests, setRequests] = useState<Request[]>([]);
 
@@ -59,6 +99,10 @@ export default function RequestsView() {
   const [page, setPage] = useState(1);
 
   const [totalPages, setTotalPages] = useState(1);
+
+  const [pendingCancel, setPendingCancel] = useState<{ id: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -104,30 +148,44 @@ export default function RequestsView() {
 
   const handleStatusChange = async (
     id: string,
-
     newStatus: Request["status"],
   ) => {
+    if (newStatus === "cancelled") {
+      setPendingCancel({ id });
+      return;
+    }
+
     try {
-      await updateTrainingRequest(id, {
-        status: newStatus,
-      });
+      await updateTrainingRequest(id, { status: newStatus });
 
       setRequests((prev) =>
         prev.map((req) =>
-          req.id === id
-            ? {
-                ...req,
-                status: newStatus,
-              }
-            : req,
+          req.id === id ? { ...req, status: newStatus } : req,
         ),
       );
 
       toast.success("Estado actualizado correctamente");
     } catch (error) {
       console.error("Error actualizando estado", error);
-
       toast.error("Error actualizando estado");
+    }
+  };
+
+  const confirmCancel = async () => {
+    if (!pendingCancel) return;
+    try {
+      await updateTrainingRequest(pendingCancel.id, { status: "cancelled" });
+      setRequests((prev) =>
+        prev.map((req) =>
+          req.id === pendingCancel.id ? { ...req, status: "cancelled" } : req,
+        ),
+      );
+      toast.success("Solicitud cancelada");
+    } catch (error) {
+      console.error("Error cancelando la solicitud", error);
+      toast.error("Error cancelando la solicitud");
+    } finally {
+      setPendingCancel(null);
     }
   };
 
@@ -280,6 +338,12 @@ export default function RequestsView() {
           )}
         </div>
       </div>
+      {pendingCancel && (
+        <ConfirmCancelModal
+          onConfirm={confirmCancel}
+          onCancel={() => setPendingCancel(null)}
+        />
+      )}
     </AdminLayout>
   );
 }

@@ -12,6 +12,8 @@ import { rescheduleMeeting } from "@/services/meetings.service";
 
 import { useChatContext } from "@/context/ChatContext";
 
+import { socket } from "@/lib/socket";
+
 type SolicitudDetalleViewProps = {
   id: string;
 };
@@ -55,6 +57,21 @@ export default function SolicitudDetalleView({
     };
 
     fetchSolicitud();
+  }, [id]);
+
+  useEffect(() => {
+    socket.on("notification:new", (notification) => {
+      if (
+        notification.type === "request_cancelled" &&
+        notification.requestId === id
+      ) {
+        getTrainingRequestById(id).then(setSolicitud);
+      }
+    });
+
+    return () => {
+      socket.off("notification:new");
+    };
   }, [id]);
 
   if (loading) {
@@ -374,7 +391,6 @@ export default function SolicitudDetalleView({
 
                           const newStartTime = `${newDate}T${newTime}:00`;
 
-
                           await rescheduleMeeting(
                             latestMeeting.id,
                             newDate,
@@ -465,6 +481,17 @@ export default function SolicitudDetalleView({
               </div>
             )}
         </div>
+
+        {solicitud.status === "cancelled" &&
+          solicitud.cancellationReason === "service_deleted" && (
+            <div className="mt-10 border border-red-500/20 bg-red-500/5 rounded-xl p-5">
+              <p className="text-sm text-red-300">
+                Esta solicitud fue cancelada porque el servicio solicitado ya no
+                está disponible. Si tenés consultas, podés contactarnos desde la
+                sección de Contacto.
+              </p>
+            </div>
+          )}
 
         {solicitud.status === "in_review" && !latestMeeting && (
           <div className="mt-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-blue-500/20 bg-blue-500/10 rounded-xl p-5">
