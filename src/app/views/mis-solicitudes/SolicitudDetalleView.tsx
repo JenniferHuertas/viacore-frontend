@@ -69,8 +69,6 @@ export default function SolicitudDetalleView({
 
       const response = await getAvailability(date);
 
-      console.log("AVAILABILITY RESPONSE:", response);
-
       setAvailableSlots(response || []);
     } catch (error: any) {
       console.error("ERROR COMPLETO:", error);
@@ -377,6 +375,8 @@ export default function SolicitudDetalleView({
                           day: "numeric",
                           month: "long",
                           year: "numeric",
+                          timeZone:
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
                         },
                       )}
                     </p>
@@ -391,6 +391,9 @@ export default function SolicitudDetalleView({
                         {
                           hour: "2-digit",
                           minute: "2-digit",
+                          timeZone:
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          hour12: false,
                         },
                       )}{" "}
                       hs
