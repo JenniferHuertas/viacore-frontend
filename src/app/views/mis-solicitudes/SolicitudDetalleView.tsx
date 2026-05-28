@@ -120,8 +120,9 @@ export default function SolicitudDetalleView({
   useEffect(() => {
     socket.on("notification:new", (notification) => {
       if (
-        notification.type === "request_cancelled" &&
-        notification.requestId === id
+        notification.requestId === id &&
+        (notification.type === "request_cancelled" ||
+          notification.type === "meeting_cancelled")
       ) {
         getTrainingRequestById(id).then(setSolicitud);
       }
