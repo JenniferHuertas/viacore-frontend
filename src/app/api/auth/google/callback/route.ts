@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
 export async function GET(
   request: NextRequest,
@@ -26,8 +29,12 @@ export async function GET(
         backendCallback,
         {
           method: "GET",
-          credentials: "include",
-          redirect: "manual",
+
+          credentials:
+            "include",
+
+          redirect:
+            "manual",
         },
       );
 
@@ -61,6 +68,10 @@ export async function GET(
         cookie,
       );
     }
+
+    console.log(
+      "COOKIES COPIED TO FRONTEND",
+    );
 
     return redirectResponse;
 
