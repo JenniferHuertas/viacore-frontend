@@ -153,7 +153,7 @@ export function UserProvider({
     ) return;
 
     const isAdmin =
-      user.role === "Admin";
+      user.role === "admin";
 
     const isProfileCompleted =
       user.profileCompleted;
