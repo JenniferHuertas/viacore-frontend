@@ -85,7 +85,7 @@ export default function RequestDetailView({ id }: { id: string }) {
     formData.append("trainingRequestId", request.id);
     formData.append("title", "Cotización");
 
-    await uploadFile(formData); // ← ya no pasa request.id como primer arg
+    await uploadFile(request.id, formData); // ← ya no pasa request.id como primer arg
 
     toast.success("Cotización enviada correctamente");
     setQuotationFile(null);
