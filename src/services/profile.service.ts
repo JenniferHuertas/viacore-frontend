@@ -26,7 +26,7 @@ export type UpdateProfilePayload = {
 };
 
 export const getMyProfile = (): Promise<Profile> => {
-  return api("/api/profile/me", {
+  return api("/api/auth/profile/me", {
     method: "GET",
   });
 };
@@ -34,7 +34,7 @@ export const getMyProfile = (): Promise<Profile> => {
 export const updateMyProfile = (
   payload: UpdateProfilePayload,
 ): Promise<Profile> => {
-  return api("/api/profile/me", {
+  return api("/api/auth/profile/me", {
     method: "PATCH",
 
     body: JSON.stringify(payload),
