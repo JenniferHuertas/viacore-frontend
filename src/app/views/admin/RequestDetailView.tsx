@@ -72,32 +72,30 @@ export default function RequestDetailView({ id }: { id: string }) {
   }, [id]);
 
   const handleUploadQuotation = async () => {
-    if (!quotationFile || !request) {
-      toast.warning("Seleccioná un archivo");
+  if (!quotationFile || !request) {
+    toast.warning("Seleccioná un archivo");
+    return;
+  }
 
-      return;
-    }
+  try {
+    setUploading(true);
 
-    try {
-      setUploading(true);
+    const formData = new FormData();
+    formData.append("file", quotationFile);
+    formData.append("trainingRequestId", request.id);
+    formData.append("title", "Cotización");
 
-      const formData = new FormData();
+    await uploadFile(formData); // ← ya no pasa request.id como primer arg
 
-      formData.append("file", quotationFile);
-
-      await uploadFile(request.id, formData);
-
-      toast.success("Cotización enviada correctamente");
-
-      setQuotationFile(null);
-    } catch (error) {
-      console.error(error);
-
-      toast.error("Error enviando cotización");
-    } finally {
-      setUploading(false);
-    }
-  };
+    toast.success("Cotización enviada correctamente");
+    setQuotationFile(null);
+  } catch (error) {
+    console.error(error);
+    toast.error("Error enviando cotización");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleDownload = async (fileUrl: string, fileName: string) => {
     const response = await fetch(fileUrl);
