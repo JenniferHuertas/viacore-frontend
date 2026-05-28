@@ -10,7 +10,7 @@ import Link from "next/link";
 
 import {
   getTrainingRequests,
-  updateTrainingRequest,
+  updateTrainingRequestStatus,
 } from "@/services/trainingRequests.service";
 
 import { socket } from "@/lib/socket";
@@ -116,9 +116,11 @@ export default function RequestsView() {
         if (response.meta) {
           setTotalPages(response.meta.totalPages);
         }
+
         if (!socket.connected) {
           socket.connect();
         }
+
         socket.emit("join-admin");
       } catch (error) {
         console.error("Error obteniendo solicitudes", error);
@@ -135,7 +137,9 @@ export default function RequestsView() {
   useEffect(() => {
     socket.on("notification:admin", async () => {
       const response = await getTrainingRequests(page, 10);
+
       setRequests(response.data);
+
       if (response.meta) {
         setTotalPages(response.meta.totalPages);
       }
@@ -152,11 +156,12 @@ export default function RequestsView() {
   ) => {
     if (newStatus === "cancelled") {
       setPendingCancel({ id });
+
       return;
     }
 
     try {
-      await updateTrainingRequest(id, { status: newStatus });
+      await updateTrainingRequestStatus(id, newStatus);
 
       setRequests((prev) =>
         prev.map((req) =>
@@ -167,22 +172,32 @@ export default function RequestsView() {
       toast.success("Estado actualizado correctamente");
     } catch (error) {
       console.error("Error actualizando estado", error);
+
       toast.error("Error actualizando estado");
     }
   };
 
   const confirmCancel = async () => {
     if (!pendingCancel) return;
+
     try {
-      await updateTrainingRequest(pendingCancel.id, { status: "cancelled" });
+      await updateTrainingRequestStatus(
+        pendingCancel.id,
+        "cancelled",
+      );
+
       setRequests((prev) =>
         prev.map((req) =>
-          req.id === pendingCancel.id ? { ...req, status: "cancelled" } : req,
+          req.id === pendingCancel.id
+            ? { ...req, status: "cancelled" }
+            : req,
         ),
       );
+
       toast.success("Solicitud cancelada");
     } catch (error) {
       console.error("Error cancelando la solicitud", error);
+
       toast.error("Error cancelando la solicitud");
     } finally {
       setPendingCancel(null);
@@ -193,7 +208,9 @@ export default function RequestsView() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Solicitudes</h1>
+          <h1 className="text-2xl font-semibold text-white">
+            Solicitudes
+          </h1>
 
           <div className="h-0.5 w-12 bg-[#C7962D] mt-2" />
 
@@ -224,13 +241,19 @@ export default function RequestsView() {
               <tbody>
                 {requests.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-gray-500">
+                    <td
+                      colSpan={4}
+                      className="p-8 text-center text-gray-500"
+                    >
                       No hay solicitudes registradas en esta página.
                     </td>
                   </tr>
                 ) : (
                   requests.map((req) => (
-                    <tr key={req.id} className="border-b border-white/5">
+                    <tr
+                      key={req.id}
+                      className="border-b border-white/5"
+                    >
                       <td className="p-4">
                         {req.user?.companyName || "Empresa"}
                       </td>
@@ -292,14 +315,20 @@ export default function RequestsView() {
                             Confirmada
                           </option>
 
-                          <option value="scheduled">Agendada</option>
+                          <option value="scheduled">
+                            Agendada
+                          </option>
 
-                          <option value="cancelled">Cancelada</option>
+                          <option value="cancelled">
+                            Cancelada
+                          </option>
                         </select>
                       </td>
 
                       <td className="p-4 text-right">
-                        <Link href={`/admin/requests/${req.id}`}>
+                        <Link
+                          href={`/admin/requests/${req.id}`}
+                        >
                           <button className="text-[#C7962D] hover:underline cursor-pointer">
                             Ver detalle
                           </button>
@@ -315,7 +344,9 @@ export default function RequestsView() {
           {!loading && requests.length > 0 && (
             <div className="flex items-center justify-between border-t border-white/10 p-4">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() =>
+                  setPage((p) => Math.max(1, p - 1))
+                }
                 disabled={page === 1}
                 className="rounded-md border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
@@ -323,12 +354,22 @@ export default function RequestsView() {
               </button>
 
               <span className="text-sm text-gray-400">
-                Página <strong className="text-white">{page}</strong> de{" "}
-                <strong className="text-white">{totalPages}</strong>
+                Página{" "}
+                <strong className="text-white">
+                  {page}
+                </strong>{" "}
+                de{" "}
+                <strong className="text-white">
+                  {totalPages}
+                </strong>
               </span>
 
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setPage((p) =>
+                    Math.min(totalPages, p + 1),
+                  )
+                }
                 disabled={page >= totalPages}
                 className="rounded-md border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
@@ -338,6 +379,7 @@ export default function RequestsView() {
           )}
         </div>
       </div>
+
       {pendingCancel && (
         <ConfirmCancelModal
           onConfirm={confirmCancel}
