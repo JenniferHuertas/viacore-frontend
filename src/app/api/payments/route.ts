@@ -1,16 +1,14 @@
+// src/app/api/payments/route.ts
+// GET /payments?startDate=...&endDate=... → solo Admin
+ 
 import { NextRequest } from "next/server";
-
 import { proxyToBackend } from "@/lib/proxy";
-
-export async function GET(
-  req: NextRequest,
-) {
+ 
+export async function GET(req: NextRequest) {
   return proxyToBackend({
-    backendPath:
-      `/payments${req.nextUrl.search}`,
-
+    backendPath: "/payments",
     method: "GET",
-
     req,
   });
 }
+ 
