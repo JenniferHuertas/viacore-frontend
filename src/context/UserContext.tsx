@@ -60,7 +60,7 @@ export function UserProvider({
 
         const profile =
           await api(
-            "/api/auth/profile",
+            "/auth/profile",
             {
               method: "GET",
 
