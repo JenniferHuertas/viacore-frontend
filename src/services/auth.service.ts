@@ -18,7 +18,7 @@ export const loginUser = (
     password: string;
   },
 ) => {
-  return api("/auth/signin", {
+  return api("/api/auth/signin", {
     method: "POST",
 
     body: JSON.stringify(
