@@ -8,7 +8,7 @@ export async function POST(
   const { id } = await params;
 
   return proxyToBackend({
-    backendPath: /training-requests/${id}/upload-evidence,
+    backendPath: '/training-requests/${id}/upload-evidence',
     method: "POST",
     req,
   });
