@@ -8,7 +8,7 @@ export const uploadFile =
   ) => {
 
     return api(
-      `/api/upload-evidence`,
+      `/api/files/upload`,
       {
         method: "POST",
 
