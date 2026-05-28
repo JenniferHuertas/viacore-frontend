@@ -1,37 +1,97 @@
 "use client";
-
 import Link from "next/link";
-
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
-
 import { getTrainingRequestById } from "@/services/trainingRequests.service";
-
-import { rescheduleMeeting } from "@/services/meetings.service";
-
+import {
+  rescheduleMeeting,
+  getAvailability,
+} from "@/services/meetings.service";
 import { useChatContext } from "@/context/ChatContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { meetingSchema } from "@/validations/meeting.validations";
+
+import { socket } from "@/lib/socket";
 
 type SolicitudDetalleViewProps = {
   id: string;
+};
+type FormData = {
+  fecha: string;
+  horario: string;
+};
+type Slot = {
+  start: string;
+  end: string;
+  formatted?: string;
 };
 
 export default function SolicitudDetalleView({
   id,
 }: SolicitudDetalleViewProps) {
   const [solicitud, setSolicitud] = useState<any>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [showReschedule, setShowReschedule] = useState(false);
-
-  const [newDate, setNewDate] = useState("");
-
-  const [newTime, setNewTime] = useState("");
-
   const [savingReschedule, setSavingReschedule] = useState(false);
-
+  const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const { setTrainingRequestId } = useChatContext();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(meetingSchema),
+  });
+  const watchedDate = watch("fecha");
+  const watchedTime = watch("horario");
+
+  const handleDateChange = async (date: string) => {
+    if (!date || date.length !== 10) {
+      setAvailableSlots([]);
+
+      return;
+    }
+
+    const parsedDate = new Date(date);
+
+    if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() < 2025) {
+      setAvailableSlots([]);
+
+      return;
+    }
+
+    try {
+      setLoadingSlots(true);
+
+      const response = await getAvailability(date);
+
+      setAvailableSlots(response || []);
+    } catch (error: any) {
+      console.error("ERROR COMPLETO:", error);
+
+      toast.error("No se pudieron cargar los horarios disponibles");
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const handleSlotSelect = (slot: Slot) => {
+    const horario =
+      slot.formatted ??
+      (() => {
+        const date = new Date(slot.start);
+
+        return `${String(date.getHours()).padStart(2, "0")}:${String(
+          date.getMinutes(),
+        ).padStart(2, "0")}`;
+      })();
+
+    setValue("horario", horario);
+  };
 
   useEffect(() => {
     setTrainingRequestId(id);
@@ -55,6 +115,21 @@ export default function SolicitudDetalleView({
     };
 
     fetchSolicitud();
+  }, [id]);
+
+  useEffect(() => {
+    socket.on("notification:new", (notification) => {
+      if (
+        notification.type === "request_cancelled" &&
+        notification.requestId === id
+      ) {
+        getTrainingRequestById(id).then(setSolicitud);
+      }
+    });
+
+    return () => {
+      socket.off("notification:new");
+    };
   }, [id]);
 
   if (loading) {
@@ -300,6 +375,8 @@ export default function SolicitudDetalleView({
                           day: "numeric",
                           month: "long",
                           year: "numeric",
+                          timeZone:
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
                         },
                       )}
                     </p>
@@ -314,6 +391,9 @@ export default function SolicitudDetalleView({
                         {
                           hour: "2-digit",
                           minute: "2-digit",
+                          timeZone:
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          hour12: false,
                         },
                       )}{" "}
                       hs
@@ -353,55 +433,116 @@ export default function SolicitudDetalleView({
 
                     <input
                       type="date"
-                      value={newDate}
-                      onChange={(e) => setNewDate(e.target.value)}
+                      min={new Date().toISOString().split("T")[0]}
+                      {...register("fecha", {
+                        onChange: async (e) => {
+                          setValue("horario", "");
+
+                          await handleDateChange(e.target.value);
+                        },
+                      })}
                       className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
                     />
 
-                    <input
-                      type="time"
-                      step="1800"
-                      value={newTime}
-                      onChange={(e) => setNewTime(e.target.value)}
-                      className="w-full rounded-xl bg-[#111] border border-white/10 p-3 text-white"
-                    />
+                    <div>
+                      <p className="text-sm text-gray-300 mb-4">
+                        Horarios disponibles
+                      </p>
+
+                      {loadingSlots ? (
+                        <div className="text-sm text-gray-400">
+                          Cargando horarios...
+                        </div>
+                      ) : watchedDate && availableSlots.length === 0 ? (
+                        <div className="text-sm text-gray-500 border border-white/10 rounded-xl p-4 bg-black/20">
+                          No hay horarios disponibles para la fecha
+                          seleccionada.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {availableSlots.map((slot, index) => {
+                            const label =
+                              slot.formatted ??
+                              (() => {
+                                const date = new Date(slot.start);
+
+                                return `${String(date.getHours()).padStart(
+                                  2,
+                                  "0",
+                                )}:${String(date.getMinutes()).padStart(
+                                  2,
+                                  "0",
+                                )}`;
+                              })();
+
+                            const isSelected = watchedTime === label;
+
+                            return (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => handleSlotSelect(slot)}
+                                className={`rounded-xl border py-3 text-sm font-medium transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "bg-[#C7962D] text-black border-[#C7962D]"
+                                    : "bg-black/30 border-white/10 text-white hover:border-[#C7962D]"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {errors.horario && (
+                        <p className="text-red-500 text-sm mt-2">
+                          {errors.horario.message}
+                        </p>
+                      )}
+                    </div>
 
                     <button
+                      type="button"
                       disabled={savingReschedule}
-                      onClick={async () => {
-                        try {
-                          setSavingReschedule(true);
+                      onClick={() => {
+                        if (
+                          !watch("fecha")?.trim() ||
+                          !watch("horario")?.trim()
+                        ) {
+                          toast.warning("Debes completar todos los campos");
 
-                          const newStartTime = `${newDate}T${newTime}:00`;
-
-
-                          await rescheduleMeeting(
-                            latestMeeting.id,
-                            newDate,
-                            newTime,
-                          );
-
-                          const updated = await getTrainingRequestById(id);
-
-                          setSolicitud(updated);
-
-                          setShowReschedule(false);
-
-                          setNewDate("");
-
-                          setNewTime("");
-
-                          toast.success("Reunión reprogramada correctamente");
-                        } catch (error: any) {
-                          console.error(error);
-
-                          toast.error(
-                            error?.message ||
-                              "No se pudo reprogramar la reunión",
-                          );
-                        } finally {
-                          setSavingReschedule(false);
+                          return;
                         }
+
+                        handleSubmit(async (data) => {
+                          try {
+                            setSavingReschedule(true);
+
+                            await rescheduleMeeting(
+                              latestMeeting.id,
+                              data.fecha,
+                              data.horario,
+                            );
+
+                            const updated = await getTrainingRequestById(id);
+
+                            setSolicitud(updated);
+
+                            setShowReschedule(false);
+
+                            toast.success("Reunión reprogramada correctamente");
+                          } catch (error: any) {
+                            console.error(error);
+
+                            toast.error(
+                              error?.message ||
+                                "No se pudo reprogramar la reunión",
+                            );
+                          } finally {
+                            setSavingReschedule(false);
+                          }
+                        })();
                       }}
                       className="rounded-xl bg-[#C7962D] px-6 py-3 font-semibold text-black transition hover:opacity-90 cursor-pointer"
                     >
@@ -465,6 +606,17 @@ export default function SolicitudDetalleView({
               </div>
             )}
         </div>
+
+        {solicitud.status === "cancelled" &&
+          solicitud.cancellationReason === "service_deleted" && (
+            <div className="mt-10 border border-red-500/20 bg-red-500/5 rounded-xl p-5">
+              <p className="text-sm text-red-300">
+                Esta solicitud fue cancelada porque el servicio solicitado ya no
+                está disponible. Si tenés consultas, podés contactarnos desde la
+                sección de Contacto.
+              </p>
+            </div>
+          )}
 
         {solicitud.status === "in_review" && !latestMeeting && (
           <div className="mt-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border border-blue-500/20 bg-blue-500/10 rounded-xl p-5">
