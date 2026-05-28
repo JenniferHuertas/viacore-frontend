@@ -22,3 +22,18 @@ export async function PATCH(
     req,
   });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: Params,
+) {
+  const { id } = await params;
+
+  return proxyToBackend({
+    backendPath: `/trainings/${id}`,
+
+    method: "DELETE",
+
+    req,
+  });
+}

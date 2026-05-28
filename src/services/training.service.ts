@@ -78,7 +78,7 @@ export const updateTraining = async (
 export const deleteTraining = async (
   id: string,
 ) => {
-  return api(`/trainings/${id}`, {
+  return api(`/api/trainings/${id}`, {
     method: "DELETE",
   });
 };
