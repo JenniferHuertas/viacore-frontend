@@ -1,5 +1,5 @@
 import { api } from "./api";
- 
+
 export const getUsers = async (
   page: number = 1,
 ) => {
@@ -10,7 +10,7 @@ export const getUsers = async (
     },
   );
 };
- 
+
 export const toggleUserStatus = async (
   userId: string,
   isActive: boolean,
@@ -19,11 +19,14 @@ export const toggleUserStatus = async (
     `/api/users/${userId}`,
     {
       method: "PUT",
-      body: { isActive },
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isActive }),
     },
   );
 };
- 
+
 export const deactivateUser = async (
   id: string,
 ) => {
