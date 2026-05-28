@@ -1,7 +1,10 @@
 import { api } from "./api";
 
-export const uploadFile = (formData: FormData) => {
-  return api("/api/files/upload", {
+export const uploadFile = (
+  requestId: string,
+  formData: FormData,
+) => {
+  return api('/api/training-requests/${requestId}/upload-evidence', {
     method: "POST",
     body: formData,
   });
