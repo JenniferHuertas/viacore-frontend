@@ -6,6 +6,10 @@ export async function GET(
 
   try {
 
+    console.log(
+      "GOOGLE CALLBACK HIT",
+    );
+
     const url =
       new URL(request.url);
 
@@ -14,6 +18,11 @@ export async function GET(
 
     const backendCallback =
       `${process.env.NEXT_PUBLIC_API_URL}/auth/google/callback?${searchParams.toString()}`;
+
+    console.log(
+      "BACKEND CALLBACK:",
+      backendCallback,
+    );
 
     const response =
       await fetch(
@@ -25,15 +34,30 @@ export async function GET(
         },
       );
 
+    console.log(
+      "BACKEND STATUS:",
+      response.status,
+    );
+
     const setCookie =
       response.headers.get(
         "set-cookie",
       );
 
+    console.log(
+      "SET COOKIE:",
+      setCookie,
+    );
+
     const token =
       setCookie
         ?.split("userSession=")[1]
         ?.split(";")[0];
+
+    console.log(
+      "TOKEN:",
+      token,
+    );
 
     const frontendUrl =
       process.env.NEXT_PUBLIC_FRONTEND_URL ||
@@ -45,6 +69,10 @@ export async function GET(
       );
 
     if (token) {
+
+      console.log(
+        "SETTING COOKIE IN VERCEL",
+      );
 
       redirectResponse.cookies.set(
         "userSession",
@@ -66,7 +94,7 @@ export async function GET(
   } catch (error) {
 
     console.error(
-      "GOOGLE CALLBACK PROXY ERROR:",
+      "GOOGLE CALLBACK ERROR:",
       error,
     );
 
