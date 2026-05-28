@@ -30,12 +30,6 @@ export default function AutenticacionGoogleView() {
     const init = async () => {
       try {
         // 馃敟 Brave tarda m谩s en persistir cookies cross-site
-
-        const tokenFromUrl = searchParams.get("token");
-        if (tokenFromUrl) {
-          localStorage.setItem("token", tokenFromUrl);
-        }
-        
         await new Promise((res) =>
           setTimeout(res, 1200),
         );
