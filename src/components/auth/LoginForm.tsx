@@ -132,10 +132,11 @@ export default function LoginForm({
 
       setLoading(true);
 
-      await loginUser(
-        data,
-      );
-
+      const response = await loginUser(data);
+        if (response?.access_token) {
+          localStorage.setItem("token", response.access_token);
+        }
+      
       await login();
 
       try {
