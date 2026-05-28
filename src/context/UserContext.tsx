@@ -60,7 +60,7 @@ export function UserProvider({
 
         const profile =
           await api(
-            "/api/auth/profile",
+            "/auth/profile",
             {
               method: "GET",
 
@@ -73,6 +73,9 @@ export function UserProvider({
                 "include",
             },
           );
+        if (profile?.access_token) {
+          localStorage.setItem("token", profile.access_token);
+        }
 
         setUser(profile);
 
@@ -242,6 +245,7 @@ export function UserProvider({
 
       } finally {
 
+        localStorage.removeItem("token");
         setUser(null);
 
         router.push("/");
