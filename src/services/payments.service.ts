@@ -10,18 +10,30 @@ export type PaymentsFilters = {
 export const getPayments = async (
   filters: PaymentsFilters,
 ) => {
-  const params = new URLSearchParams({
-    startDate: filters.startDate,
-    endDate: filters.endDate,
-    page: String(filters.page ?? 1),
-    limit: "5",
-  });
+  const params =
+    new URLSearchParams({
+      startDate:
+        filters.startDate,
+
+      endDate:
+        filters.endDate,
+
+      page: String(
+        filters.page ?? 1,
+      ),
+
+      limit: "5",
+    });
 
   if (filters.status) {
-    params.append("status", filters.status);
+
+    params.append(
+      "status",
+      filters.status,
+    );
   }
 
   return await api(
-    `/payments?${params.toString()}`
+    `/api/payments?${params.toString()}`,
   );
 };
