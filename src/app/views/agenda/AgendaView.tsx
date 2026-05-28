@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -26,42 +26,29 @@ export default function AgendaView({ id }: AgendaViewProps) {
   const [form, setForm] = useState({ fecha: "", horario: "" });
   const [errors, setErrors] = useState<any>({});
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!form.fecha) {
-        setAvailableSlots([]);
-        return;
-      }
+ const handleDateChange = async () => {
+  const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(form.fecha);
 
-      try {
-        setLoadingSlots(true);
-        const response = await getAvailability(form.fecha);
-        setAvailableSlots(response || []);
-      } catch (error) {
-        console.error("Error obteniendo disponibilidad", error);
-        toast.error("No se pudieron cargar los horarios disponibles.");
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
+  if (!isValidDate) {
+    setAvailableSlots([]);
+    return;
+  }
 
-    fetchAvailability();
-  }, [form.fecha]);
+  try {
+    setLoadingSlots(true);
 
-  const handleDateChange = (e: any) => {
-    const updatedForm = { ...form, fecha: e.target.value, horario: "" };
-    setForm(updatedForm);
+    const response = await getAvailability(form.fecha);
 
-    const resultado = meetingSchema.safeParse(updatedForm);
-    if (!resultado.success) {
-      setErrors(resultado.error.format());
-    } else {
-      setErrors({});
-    }
-  };
+    setAvailableSlots(response || []);
+  } catch (error) {
+    console.error("Error obteniendo disponibilidad", error);
+    toast.error("No se pudieron cargar los horarios disponibles.");
+  } finally {
+    setLoadingSlots(false);
+  }
+};
 
   const handleSlotSelect = (slot: Slot) => {
-    // Usamos formatted que ya viene en hora local del usuario desde el backend
     const horario = slot.formatted ?? (() => {
       const date = new Date(slot.start);
       return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
@@ -69,43 +56,43 @@ export default function AgendaView({ id }: AgendaViewProps) {
 
     const updatedForm = { ...form, horario };
     setForm(updatedForm);
-
-    const resultado = meetingSchema.safeParse(updatedForm);
-    if (!resultado.success) {
-      setErrors(resultado.error.format());
-    } else {
-      setErrors({});
-    }
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
+const handleSubmit = async (e: any) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  const hasEmptyFields = !form.fecha || !form.horario;
 
-      const validation = meetingSchema.safeParse(form);
-      if (!validation.success) {
-        setErrors(validation.error.format());
-        toast.error("Completa correctamente los campos.");
-        return;
-      }
+  if (hasEmptyFields) {
+    toast.warning("Debes completar todos los campos");
+    return;
+  }
 
-      await createMeeting({
-        date: form.fecha,
-        time: form.horario,
-        trainingRequestId: id,
-      });
+  try {
+    setLoading(true);
 
-      toast.success("Reunión agendada correctamente.");
-      router.push(`/mis-solicitudes/${id}`);
-    } catch (error: any) {
-      console.error("Error creando reunión", error);
-      toast.error(error?.message || "No se pudo agendar la reunión.");
-    } finally {
-      setLoading(false);
+    const validation = meetingSchema.safeParse(form);
+
+    if (!validation.success) {
+      setErrors(validation.error.format());
+      return;
     }
-  };
+
+    await createMeeting({
+      date: form.fecha,
+      time: form.horario,
+      trainingRequestId: id,
+    });
+
+    toast.success("Reunión agendada correctamente.");
+    router.push(`/mis-solicitudes/${id}`);
+  } catch (error: any) {
+    console.error("Error creando reunión", error);
+    toast.error(error?.message || "No se pudo agendar la reunión.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#070707] text-white px-6 pt-32 pb-24">
@@ -129,15 +116,21 @@ export default function AgendaView({ id }: AgendaViewProps) {
             reunión inicial con el equipo de ViaCore.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8" noValidate>
             <div>
               <label className="text-sm text-gray-300">Fecha</label>
               <input
                 type="date"
                 name="fecha"
                 value={form.fecha}
-                onChange={handleDateChange}
-                required
+                  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      fecha: e.target.value,
+      horario: "",
+    }))
+  }
+                onBlur={handleDateChange}
                 className="w-full mt-2 p-3 rounded-xl bg-black/40 border border-white/10 text-white outline-none focus:border-[#C7962D] transition-all"
               />
               {errors.fecha?._errors?.[0] && (
@@ -163,7 +156,6 @@ export default function AgendaView({ id }: AgendaViewProps) {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {availableSlots.map((slot, index) => {
-                    // Usamos formatted directamente — ya viene en hora local del usuario
                     const label = slot.formatted ?? (() => {
                       const date = new Date(slot.start);
                       return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
@@ -176,7 +168,7 @@ export default function AgendaView({ id }: AgendaViewProps) {
                         key={index}
                         type="button"
                         onClick={() => handleSlotSelect(slot)}
-                        className={`rounded-xl border py-3 text-sm font-medium transition-all ${
+                        className={`rounded-xl border py-3 text-sm font-medium transition-all cursor-pointer ${
                           isSelected
                             ? "bg-[#C7962D] text-black border-[#C7962D]"
                             : "bg-black/30 border-white/10 text-white hover:border-[#C7962D]"
@@ -211,8 +203,8 @@ export default function AgendaView({ id }: AgendaViewProps) {
 
             <button
               type="submit"
-              disabled={loading || !form.horario}
-              className="w-full py-4 rounded-xl font-semibold text-black bg-linear-to-r from-[#C7962D] to-[#E0B84F] hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              className="w-full py-4 rounded-xl font-semibold text-black bg-linear-to-r from-[#C7962D] to-[#E0B84F] hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? "Agendando reunión..." : "Confirmar reunión"}
             </button>
