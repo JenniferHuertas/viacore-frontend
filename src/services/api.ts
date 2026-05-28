@@ -14,9 +14,6 @@ export const api = async (
       ? endpoint
       : `${API_URL}${endpoint}`;
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   const res = await fetch(url, {
     ...options,
 
@@ -30,7 +27,6 @@ export const api = async (
               "application/json",
           }),
 
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
