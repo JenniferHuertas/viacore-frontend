@@ -34,7 +34,7 @@ export async function PATCH(
 
     const response =
       await fetch(
-        ${process.env.NEXT_PUBLIC_API_URL}/users/complete-profile,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/complete-profile`,
         {
           method: "PATCH",
 
@@ -43,7 +43,7 @@ export async function PATCH(
               "application/json",
 
             Cookie:
-              userSession=${userSession.value},
+              `userSession=${userSession.value}`,
           },
 
           body: JSON.stringify(
