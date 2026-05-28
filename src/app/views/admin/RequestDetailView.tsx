@@ -82,7 +82,6 @@ export default function RequestDetailView({ id }: { id: string }) {
 
     const formData = new FormData();
     formData.append("file", quotationFile);
-    formData.append("trainingRequestId", request.id);
     formData.append("title", "Cotización");
 
     await uploadFile(request.id, formData); // ← ya no pasa request.id como primer arg
