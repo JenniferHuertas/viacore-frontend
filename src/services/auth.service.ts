@@ -39,7 +39,7 @@ export const completeProfile =
   ) => {
 
     return api(
-      "/users/complete-profile",
+      "/api/users/complete-profile",
       {
         method: "PATCH",
 
@@ -49,3 +49,4 @@ export const completeProfile =
       },
     );
   };
+  
