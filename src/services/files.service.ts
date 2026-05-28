@@ -8,7 +8,7 @@ export const uploadFile =
   ) => {
 
     return api(
-      `/training-requests/${requestId}/upload-evidence`,
+      `/api/upload-evidence`,
       {
         method: "POST",
 
