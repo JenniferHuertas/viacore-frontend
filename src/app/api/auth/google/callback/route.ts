@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
 ) {
 
   try {
@@ -10,11 +10,8 @@ export async function GET(
       "GOOGLE CALLBACK HIT",
     );
 
-    const url =
-      new URL(request.url);
-
     const searchParams =
-      url.searchParams;
+      request.nextUrl.searchParams;
 
     const backendCallback =
       `${process.env.NEXT_PUBLIC_API_URL}/auth/google/callback?${searchParams.toString()}`;
@@ -29,7 +26,7 @@ export async function GET(
         backendCallback,
         {
           method: "GET",
-
+          credentials: "include",
           redirect: "manual",
         },
       );
@@ -39,53 +36,29 @@ export async function GET(
       response.status,
     );
 
-    const setCookie =
-      response.headers.get(
-        "set-cookie",
-      );
+    const cookies =
+      response.headers.getSetCookie();
 
     console.log(
-      "SET COOKIE:",
-      setCookie,
-    );
-
-    const token =
-      setCookie
-        ?.split("userSession=")[1]
-        ?.split(";")[0];
-
-    console.log(
-      "TOKEN:",
-      token,
+      "COOKIES:",
+      cookies,
     );
 
     const frontendUrl =
-      process.env.NEXT_PUBLIC_FRONTEND_URL ||
-      "http://localhost:3000";
+      process.env
+        .NEXT_PUBLIC_FRONTEND_URL ||
+      "https://estudio-via3-frontend.vercel.app";
 
     const redirectResponse =
       NextResponse.redirect(
         `${frontendUrl}/autenticacion/autenticacion-google`,
       );
 
-    if (token) {
+    for (const cookie of cookies) {
 
-      console.log(
-        "SETTING COOKIE IN VERCEL",
-      );
-
-      redirectResponse.cookies.set(
-        "userSession",
-        token,
-        {
-          httpOnly: true,
-
-          secure: true,
-
-          sameSite: "lax",
-
-          path: "/",
-        },
+      redirectResponse.headers.append(
+        "set-cookie",
+        cookie,
       );
     }
 
