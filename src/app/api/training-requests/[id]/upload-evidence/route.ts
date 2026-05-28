@@ -1,21 +1,14 @@
+// src/app/api/training-requests/[id]/upload-evidence/route.ts
+
 import { NextRequest } from "next/server";
-
 import { proxyToBackend } from "@/lib/proxy";
-
-type Params = {
-  params: Promise<{
-    id: string;
-  }>;
-};
 
 export async function POST(
   req: NextRequest,
-  { params }: Params,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
-
   return proxyToBackend({
-    backendPath: `/training-requests/${id}/upload-evidence`,
+    backendPath: '/training-requests/${params.id}/upload-evidence',
     method: "POST",
     req,
   });
