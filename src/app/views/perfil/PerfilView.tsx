@@ -48,8 +48,10 @@ export default function PerfilView() {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: {
       errors,
+      dirtyFields,
     },
   } = useForm<ProfileFormData>({
     resolver:
@@ -57,7 +59,8 @@ export default function PerfilView() {
         profileSchema,
       ),
 
-    mode: "onChange",
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
 
   useEffect(() => {
@@ -178,13 +181,28 @@ export default function PerfilView() {
                 {email?.charAt(0).toUpperCase()}
               </div>
 
-              <div>
+              <div className="min-w-0">
 
-                <h2 className="text-2xl font-semibold text-white">
+                <h2  
+          className="
+          text-lg
+          sm:text-2xl
+          font-semibold
+          text-white
+          break-words
+          leading-tight
+        ">
                   {email}
                 </h2>
 
-                <p className="text-sm text-gray-400 mt-1">
+                     <p
+        className="
+          text-sm
+          text-gray-400
+          mt-1
+          break-words
+        "
+      >
                   Cuenta empresarial ViaCore
                 </p>
 
@@ -198,9 +216,21 @@ export default function PerfilView() {
   onSubmit={handleSubmit(
     onSubmit,
     () => {
-      toast.warning(
-        "Debes completar todos los campos",
-      );
+
+      const values = getValues();
+
+      const hasEmptyFields =
+        Object.values(values).some(
+          (value) =>
+            !String(value).trim(),
+        );
+
+      if (hasEmptyFields) {
+
+        toast.warning(
+          "Debes completar todos los campos",
+        );
+      }
     },
   )}
   className="space-y-10"
@@ -216,6 +246,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Tu nombre
+                  </label>
+
                   <Input
                     placeholder="Nombre"
                     {...register(
@@ -223,21 +257,21 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.name
-                    ?.message && (
-
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.name
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+    {dirtyFields.name &&
+ getValues("name").trim() !== "" &&
+ errors.name?.message && (
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.name.message)}
+  </p>
+)}
 
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    Número telefónico
+                  </label>
 
                   <Input
                     placeholder="Teléfono"
@@ -246,21 +280,22 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.phone
-                    ?.message && (
+     {dirtyFields.phone &&
+ getValues("phone").trim() !== "" &&
+ errors.phone?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.phone
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.phone.message)}
+  </p>
+)}
 
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    País
+                  </label>
 
                   <select
                     {...register(
@@ -328,6 +363,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Ciudad
+                  </label>
+
                   <Input
                     placeholder="Ciudad"
                     {...register(
@@ -335,17 +374,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.city
-                    ?.message && (
+       {dirtyFields.city &&
+ getValues("city").trim() !== "" &&
+ errors.city?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.city
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.city.message)}
+  </p>
+)}
 
                 </div>
 
@@ -363,6 +399,10 @@ export default function PerfilView() {
 
                 <div>
 
+                  <label className="text-sm text-white">
+                    Empresa
+                  </label>
+
                   <Input
                     placeholder="Empresa"
                     {...register(
@@ -370,21 +410,22 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.companyName
-                    ?.message && (
+       {dirtyFields.companyName &&
+ getValues("companyName").trim() !== "" &&
+ errors.companyName?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.companyName
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.companyName.message)}
+  </p>
+)}
 
                 </div>
 
                 <div>
+
+                  <label className="text-sm text-white">
+                    Dirección
+                  </label>
 
                   <Input
                     placeholder="Dirección"
@@ -393,17 +434,14 @@ export default function PerfilView() {
                     )}
                   />
 
-                  {errors.address
-                    ?.message && (
+     {dirtyFields.address &&
+ getValues("address").trim() !== "" &&
+ errors.address?.message && (
 
-                    <p className="text-red-400 text-xs mt-2">
-                      {String(
-                        errors.address
-                          .message,
-                      )}
-                    </p>
-
-                  )}
+  <p className="text-red-400 text-xs mt-2">
+    {String(errors.address.message)}
+  </p>
+)}
 
                 </div>
 

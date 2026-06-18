@@ -25,18 +25,15 @@ type UserContextType = {
   isAuthenticated: boolean;
   isProfileCompleted: boolean;
   isHydrated: boolean;
-
   login: () => Promise<void>;
-
   logout: () => Promise<void>;
-
   refreshUser: () => Promise<User | null>;
 };
 
 const UserContext =
-  createContext<UserContextType | undefined>(
-    undefined,
-  );
+  createContext<
+    UserContextType | undefined
+  >(undefined);
 
 export function UserProvider({
   children,
@@ -52,70 +49,177 @@ export function UserProvider({
 
   const router = useRouter();
 
+  // =========================
+  // REFRESH USER
+  // =========================
+
   const refreshUser =
     async (): Promise<User | null> => {
 
       try {
 
         const profile =
-          await api("/auth/profile", {
-            method: "GET",
+          await api(
+            "/api/auth/profile",
+            {
+              method: "GET",
 
-            headers: {
-              "Cache-Control": "no-cache",
+              headers: {
+                "Cache-Control":
+                  "no-cache",
+              },
+
+              credentials:
+                "include",
             },
-          });
+          );
 
         setUser(profile);
 
         return profile;
 
-} catch (error: any) {
+      } catch (error: any) {
 
-  if (
-    error?.statusCode === 401
-  ) {
+        // 🔥 401 NORMAL
+        // NO romper auth flow
+        if (
+          error?.statusCode ===
+          401
+        ) {
 
-    setUser(null);
+          setUser(null);
 
-    return null;
-  }
+          return null;
+        }
 
-  console.error(
-    "ERROR REFRESH USER",
-    {
-      statusCode:
-        error?.statusCode,
+        console.error(
+          "ERROR REFRESH USER",
+          {
+            statusCode:
+              error?.statusCode,
 
-      message:
-        error?.message,
+            message:
+              error?.message,
 
-      error,
-    },
-  );
+            error,
+          },
+        );
 
-  return null;
-}
+        return null;
 
-       finally {
+      } finally {
 
         setIsHydrated(true);
-
       }
     };
 
+  // =========================
+  // AUTO REFRESH
+  // =========================
+
   useEffect(() => {
+
+    const currentPath =
+      window.location.pathname;
+
+    const isAuthFlow =
+      currentPath.startsWith(
+        "/autenticacion",
+      );
+
+    // 🔥 IMPORTANTE
+    // evitar doble refresh
+    // durante login Google
+    if (isAuthFlow) {
+
+      setIsHydrated(true);
+
+      return;
+    }
 
     refreshUser();
 
   }, []);
 
+  // =========================
+  // ONBOARDING
+  // =========================
+
+  useEffect(() => {
+
+    if (
+      !isHydrated ||
+      !user
+    ) return;
+
+    const isAdmin =
+      user.role === "admin";
+
+    const isProfileCompleted =
+      user.profileCompleted;
+
+    const currentPath =
+      window.location.pathname;
+
+    const isOnboardingPage =
+      currentPath.startsWith(
+        "/completar-perfil",
+      );
+
+    // =========================
+    // FORCE ONBOARDING
+    // =========================
+
+    if (
+      !isAdmin &&
+      !isProfileCompleted &&
+      !isOnboardingPage
+    ) {
+
+      toast.warning(
+        "Debes completar tu perfil para continuar.",
+      );
+
+      router.replace(
+        "/completar-perfil",
+      );
+
+      return;
+    }
+
+    // =========================
+    // EXIT ONBOARDING
+    // =========================
+
+    if (
+      isProfileCompleted &&
+      isOnboardingPage
+    ) {
+
+      router.replace("/");
+
+      return;
+    }
+
+  }, [
+    user,
+    isHydrated,
+    router,
+  ]);
+
+  // =========================
+  // LOGIN
+  // =========================
+
   const login =
     async () => {
 
       await refreshUser();
-
     };
+
+  // =========================
+  // LOGOUT
+  // =========================
 
   const logout =
     async () => {
@@ -126,6 +230,9 @@ export function UserProvider({
           "/auth/logout",
           {
             method: "POST",
+
+            credentials:
+              "include",
           },
         );
 
@@ -146,9 +253,9 @@ export function UserProvider({
     };
 
   return (
+
     <UserContext.Provider
       value={{
-
         user,
 
         isAuthenticated:
@@ -164,7 +271,6 @@ export function UserProvider({
         logout,
 
         refreshUser,
-
       }}
     >
       {children}
@@ -175,9 +281,7 @@ export function UserProvider({
 export function useUserContext() {
 
   const context =
-    useContext(
-      UserContext,
-    );
+    useContext(UserContext);
 
   if (!context) {
 

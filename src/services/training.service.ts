@@ -1,4 +1,5 @@
 import { TrainingCard, TrainingDetail } from "@/types/training";
+
 import { api } from "./api";
 
 export const getAllTrainings = (
@@ -6,47 +7,78 @@ export const getAllTrainings = (
 ): Promise<TrainingCard[]> => {
   return fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/trainings${
-      params.length ? params.map((p) => "?" + p).join("&") : ""
+      params.length
+        ? params.map((p) => "?" + p).join("&")
+        : ""
     }`,
     {
       method: "GET",
+
       cache: "no-store",
     },
   ).then((res) => {
-    if (!res.ok) throw new Error("Error obteniendo trainings");
+    if (!res.ok)
+      throw new Error(
+        "Error obteniendo trainings",
+      );
+
     return res.json();
   });
 };
 
-export const getTrainingById = (id: string): Promise<TrainingDetail> => {
-  return api(`/trainings/${id}`, { method: "GET" });
-};
-
-export const createTraining = async (formData: FormData) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trainings`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
+export const getTrainingById = (
+  id: string,
+): Promise<TrainingDetail> => {
+  return api(`/trainings/${id}`, {
+    method: "GET",
   });
-
-  if (!response.ok) throw await response.json();
-  return response.json();
 };
 
-export const updateTraining = async (id: string, formData: FormData) => {
+export const createTraining = async (
+  formData: FormData,
+) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/trainings/${id}`,
+    `/api/trainings`,
     {
-      method: "PATCH",
+      method: "POST",
+
       credentials: "include",
+
       body: formData,
     },
   );
 
-  if (!response.ok) throw await response.json();
+  if (!response.ok)
+    throw await response.json();
+
   return response.json();
 };
 
-export const deleteTraining = async (id: string) => {
-  return api(`/trainings/${id}`, { method: "DELETE" });
+export const updateTraining = async (
+  id: string,
+  formData: FormData,
+) => {
+  const response = await fetch(
+    `/api/trainings/${id}`,
+    {
+      method: "PATCH",
+
+      credentials: "include",
+
+      body: formData,
+    },
+  );
+
+  if (!response.ok)
+    throw await response.json();
+
+  return response.json();
+};
+
+export const deleteTraining = async (
+  id: string,
+) => {
+  return api(`/api/trainings/${id}`, {
+    method: "DELETE",
+  });
 };

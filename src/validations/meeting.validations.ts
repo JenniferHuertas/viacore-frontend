@@ -1,16 +1,21 @@
 import { z } from "zod";
 
 const esDiaHabil = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const day = date.getDay(); // 0 Sun - 6 Sat
-  return day >= 1 && day <= 5;
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
+
+  const weekDay = date.getDay();
+
+  return weekDay >= 1 && weekDay <= 5;
 };
 
 const esHorarioLaboral = (time: string) => {
   const [h, m] = time.split(":").map(Number);
+
   const minutos = h * 60 + m;
 
-  return minutos >= 9 * 60 && minutos <= 17 * 60;
+  return minutos >= 9 * 60 && minutos <= 16 * 60 + 30;
 };
 
 export const meetingSchema = z.object({
@@ -20,5 +25,6 @@ export const meetingSchema = z.object({
 
   horario: z
     .string()
-    .refine(esHorarioLaboral, "Horario permitido: 09:00 - 17:00"),
+    .refine(esHorarioLaboral, "Horario permitido: 09:00 - 16:30"),
 });
+

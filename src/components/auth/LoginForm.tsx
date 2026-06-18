@@ -35,6 +35,8 @@ import { loginSchema } from "@/validations/login.validations";
 
 import { useUser } from "@/hooks/useUser";
 
+import ForgetPasswordModal from "./ForgetPasswordModal";
+
 type LoginFormProps = {
   onSwitchToRegister: () => void;
 };
@@ -67,6 +69,9 @@ export default function LoginForm({
   const [rememberMe, setRememberMe] =
     useState(false);
 
+  const [forgotPassword, setForgotPassword] =
+    useState(false);
+
   const {
     register,
     handleSubmit,
@@ -83,11 +88,15 @@ export default function LoginForm({
       ),
 
     mode: "onBlur",
+
     reValidateMode: "onBlur",
   });
 
-  const email = watch("email");
-  const password = watch("password");
+  const email =
+    watch("email");
+
+  const password =
+    watch("password");
 
   useEffect(() => {
 
@@ -110,11 +119,10 @@ export default function LoginForm({
 
   const onError = () => {
 
-  toast.warning(
-    "Debes completar todos los campos",
-  );
-
-};
+    toast.warning(
+      "Debes completar todos los campos",
+    );
+  };
 
   const onSubmit = async (
     data: LoginFormData,
@@ -201,13 +209,29 @@ export default function LoginForm({
 
       router.replace("/");
 
-    } catch (error) {
+    } catch (error: any) {
 
       console.error(error);
 
-      toast.error(
-        "Credenciales incorrectas",
-      );
+      const message =
+        error?.message || "";
+
+      if (
+        message.includes(
+          "Google",
+        )
+      ) {
+
+        toast.error(
+          message,
+        );
+
+      } else {
+
+        toast.error(
+          "Credenciales incorrectas",
+        );
+      }
 
     } finally {
 
@@ -216,138 +240,199 @@ export default function LoginForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(
-        onSubmit, onError,
-      )}
-      noValidate
-      autoComplete="off"
-      className="space-y-5"
-    >
-
-      <GoogleButton />
-
-      <div className="text-center text-gray-500">
-        o
-      </div>
-
-      <div>
-
-        <Input
-          type="email"
-          placeholder="Correo electrónico"
-          autoComplete="off"
-          {...register("email")}
-        />
-
-        {touchedFields.email && email && errors.email
-          ?.message && (
-
-          <p className="text-red-400 text-xs mt-1">
-            {String(
-              errors.email
-                .message,
-            )}
-          </p>
-
+    <>
+      <form
+        onSubmit={handleSubmit(
+          onSubmit,
+          onError,
         )}
 
-      </div>
+        noValidate
 
-      <div className="relative">
+        autoComplete="off"
 
-        <Input
-          type={
-            showPassword
-              ? "text"
-              : "password"
-          }
-          placeholder="Contraseña"
-          autoComplete="new-password"
-          {...register(
-            "password",
-          )}
-        />
+        className="space-y-5"
+      >
 
-        <button
-          type="button"
-          onClick={() =>
-            setShowPassword(
-              !showPassword,
-            )
-          }
-          className="absolute right-4 top-3 text-gray-400 hover:text-[#C7962D] transition cursor-pointer"
-        >
-          {showPassword ? (
-            <EyeOff size={18} />
-          ) : (
-            <Eye size={18} />
-          )}
-        </button>
+        <GoogleButton mode="signin" />
 
-        {touchedFields.password && password && errors.password
-          ?.message && (
+        <div className="text-center text-gray-500">
+          o
+        </div>
 
-          <p className="text-red-400 text-xs mt-1">
-            {String(
-              errors.password
-                .message,
-            )}
-          </p>
+        <div>
 
-        )}
-
-      </div>
-
-      <div className="flex items-center justify-between text-sm">
-
-        <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
-
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) =>
-              setRememberMe(
-                e.target.checked,
-              )
-            }
-            className="accent-[#C7962D]"
+          <Input
+            type="email"
+            placeholder="Correo electrónico"
+            autoComplete="off"
+            {...register("email")}
           />
 
-          Recordarme
+          {touchedFields.email &&
+            email &&
+            errors.email?.message && (
 
-        </label>
+              <p className="text-red-400 text-xs mt-1">
+                {String(
+                  errors.email
+                    .message,
+                )}
+              </p>
+            )}
 
-        <span className="text-[#C7962D] cursor-pointer hover:underline">
-          ¿Olvidaste tu contraseña?
-        </span>
+        </div>
 
-      </div>
+        <div className="relative">
 
-      <Button
-        type="submit" className="w-full"
-      >
-        {loading
-          ? "Ingresando..."
-          : "Acceder"}
-      </Button>
+          <Input
+            type={
+              showPassword
+                ? "text"
+                : "password"
+            }
 
-      <p className="text-sm text-gray-400 text-center">
+            placeholder="Contraseña"
 
-        ¿No tenés cuenta?{" "}
+            autoComplete="new-password"
 
-        <button
-          type="button"
-          onClick={
-            onSwitchToRegister
-          }
-          className="text-[#C7962D] hover:underline cursor-pointer"
+            {...register(
+              "password",
+            )}
+          />
+
+          <button
+            type="button"
+
+            onClick={() =>
+              setShowPassword(
+                !showPassword,
+              )
+            }
+
+            className="
+              absolute
+              right-4
+              top-3
+              text-gray-400
+              hover:text-[#C7962D]
+              transition
+              cursor-pointer
+            "
+          >
+
+            {showPassword ? (
+              <EyeOff size={18} />
+            ) : (
+              <Eye size={18} />
+            )}
+
+          </button>
+
+          {touchedFields.password &&
+            password &&
+            errors.password?.message && (
+
+              <p className="text-red-400 text-xs mt-1">
+                {String(
+                  errors.password
+                    .message,
+                )}
+              </p>
+            )}
+
+        </div>
+
+        <div className="flex items-center justify-between text-sm">
+
+          <label
+            className="
+              flex
+              items-center
+              gap-2
+              text-gray-400
+              cursor-pointer
+            "
+          >
+
+            <input
+              type="checkbox"
+
+              checked={rememberMe}
+
+              onChange={(e) =>
+                setRememberMe(
+                  e.target.checked,
+                )
+              }
+
+              className="accent-[#C7962D]"
+            />
+
+            Recordarme
+
+          </label>
+
+          <button
+            type="button"
+
+            onClick={() =>
+              setForgotPassword(true)
+            }
+
+            className="
+              text-[#C7962D]
+              hover:underline
+              cursor-pointer
+            "
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full"
         >
-          Registrate
-        </button>
 
-      </p>
+          {loading
+            ? "Ingresando..."
+            : "Acceder"}
 
-    </form>
+        </Button>
+
+        <p className="text-sm text-gray-400 text-center">
+
+          ¿No tenés cuenta?{" "}
+
+          <button
+            type="button"
+
+            onClick={
+              onSwitchToRegister
+            }
+
+            className="
+              text-[#C7962D]
+              hover:underline
+              cursor-pointer
+            "
+          >
+            Registrate
+          </button>
+
+        </p>
+
+      </form>
+
+      {forgotPassword && (
+        <ForgetPasswordModal
+          onClose={() =>
+            setForgotPassword(false)
+          }
+        />
+      )}
+    </>
   );
 }

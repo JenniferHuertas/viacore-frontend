@@ -18,7 +18,7 @@ export const loginUser = (
     password: string;
   },
 ) => {
-  return api("/auth/signin", {
+  return api("/api/auth/signin", {
     method: "POST",
 
     body: JSON.stringify(
@@ -39,7 +39,7 @@ export const completeProfile =
   ) => {
 
     return api(
-      "/users/complete-profile",
+      "/api/users/complete-profile",
       {
         method: "PATCH",
 
@@ -49,3 +49,4 @@ export const completeProfile =
       },
     );
   };
+  
