@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/auth/google/:mode",
+        destination: `${backendUrl}/auth/google?mode=:mode`,
+      },
+      {
         source: "/api/:path*",
         destination: `${backendUrl}/:path*`,
       },
