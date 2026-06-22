@@ -29,19 +29,14 @@ export default function AutenticacionGoogleView() {
 
     const init = async () => {
       try {
-        // 馃敟 Brave tarda m谩s en persistir cookies cross-site
-        await new Promise((res) =>
-          setTimeout(res, 1200),
-        );
+        // 🔥 Brave tarda más en persistir cookies cross-site
+        await new Promise((res) => setTimeout(res, 1200));
 
         let profile = await refreshUser();
 
-        // 馃敟 segundo intento REAL
+        // 🔥 segundo intento REAL
         if (!profile) {
-          await new Promise((res) =>
-            setTimeout(res, 1000),
-          );
-
+          await new Promise((res) => setTimeout(res, 1000));
           profile = await refreshUser();
         }
 
@@ -56,27 +51,16 @@ export default function AutenticacionGoogleView() {
         // =========================
         // RETURN ROUTE
         // =========================
-        const returnTo =
-          sessionStorage.getItem(
-            "googleReturnTo",
-          ) || "/";
+        const returnTo = sessionStorage.getItem("googleReturnTo") || "/";
 
-        sessionStorage.removeItem(
-          "googleMode",
-        );
-
-        sessionStorage.removeItem(
-          "googleReturnTo",
-        );
+        sessionStorage.removeItem("googleMode");
+        sessionStorage.removeItem("googleReturnTo");
 
         // =========================
         // ERROR USUARIO
         // =========================
         if (!profile) {
-          toast.error(
-            "No se pudo validar la sesion Google",
-          );
-
+          toast.error("No se pudo validar la sesion Google");
           router.replace("/autenticacion");
           return;
         }
@@ -84,19 +68,9 @@ export default function AutenticacionGoogleView() {
         // =========================
         // ONBOARDING
         // =========================
-        if (
-          !profile.profileCompleted &&
-          profile.role !== "Admin"
-        ) {
-          sessionStorage.setItem(
-            "googleReturnTo",
-            returnTo,
-          );
-
-          router.replace(
-            "/completar-perfil",
-          );
-
+        if (!profile.profileCompleted && profile.role !== "Admin") {
+          sessionStorage.setItem("googleReturnTo", returnTo);
+          router.replace("/completar-perfil");
           return;
         }
 
@@ -106,17 +80,13 @@ export default function AutenticacionGoogleView() {
         toast.success(
           mode === "signup"
             ? "Cuenta creada e inicio de sesion exitoso"
-            : "Inicio de sesion exitoso",
+            : "Inicio de sesion exitoso"
         );
 
         router.replace(returnTo);
       } catch (err) {
         console.error(err);
-
-        toast.error(
-          "Error en login con Google",
-        );
-
+        toast.error("Error en login con Google");
         router.replace("/autenticacion");
       }
     };

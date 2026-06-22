@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { completeProfile } from "@/services/auth.service";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { completeProfileSchema } from "@/validations/complete.profile.validations";
 
 export default function CompleteProfileForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     phone: "",
     country: "",
@@ -129,11 +131,9 @@ export default function CompleteProfileForm() {
             <option value="España">🇪🇸 España</option>
             <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
           </select>
-
           {touched.country && errors.country && (
             <p className="text-sm text-red-400">{errors.country}</p>
           )}
-
           <p className="text-xs text-gray-500">País donde opera la empresa</p>
         </div>
 

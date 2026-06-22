@@ -1,5 +1,12 @@
 import { api } from "./api";
 
+export interface TrainingRequestPayload {
+  trainingId?: string;
+  participantsCount: number;
+  objectives: string;
+  context: string;
+}
+
 export const getTrainingRequests = async (
   page: number = 1,
   limit: number = 10,
