@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const nextConfig: NextConfig = {
   images: {
     domains: ["res.cloudinary.com"],
@@ -13,10 +13,6 @@ const nextConfig: NextConfig = {
   
   async rewrites() {
     return [
-      {
-        source: "/api/auth/google/:mode",
-        destination: `${backendUrl}/auth/google?mode=:mode`,
-      },
       {
         source: "/api/:path*",
         destination: `${backendUrl}/:path*`,
